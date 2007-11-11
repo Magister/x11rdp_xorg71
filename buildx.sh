@@ -816,7 +816,11 @@ then
   exit 1;
 fi
 make
-make install
+if ! test $? -eq 0
+then
+  echo "error make xorg-server"
+  exit 1;
+fi
 cd ..
 
 echo "all ok"
