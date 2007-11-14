@@ -1331,7 +1331,8 @@ typedef struct _PropertyAccessRec {
 
 static PropertyAccessPtr PropertyAccessList = NULL;
 static char SecurityDefaultAction = SecurityErrorOperation;
-static char *SecurityPolicyFile = DEFAULTPOLICYFILE;
+//static char *SecurityPolicyFile = DEFAULTPOLICYFILE;
+static char *SecurityPolicyFile = "/etc/X11/xserver/SecurityPolicy";
 static ATOM SecurityMaxPropertyName = 0;
 
 static char *SecurityKeywords[] = {
