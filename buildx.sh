@@ -809,7 +809,7 @@ fi
 
 # xorg-server
 cd xorg-server-X11R7.1-1.1.0
-./configure --prefix=$PREFIXDIR --enable-xglx --with-mesa-source=$BASEDIR/Mesa-6.5
+./configure --prefix=$PREFIXDIR --with-fontdir=/usr/share/fonts/X11 --enable-xglx --with-mesa-source=$BASEDIR/Mesa-6.5
 if ! test $? -eq 0
 then
   echo "error xorg-server"
