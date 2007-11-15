@@ -23,6 +23,7 @@ CFLAGS = -O2 -fno-strength-reduce -ansi -pedantic \
 	-I../../include -I../../cfb -I../../mfb -I../../mi \
 	-I../../../fontsproto-X11R7.0-2.0.2 -I../../../xproto-X11R7.1-7.0.5 \
 	-I../../../kbproto-X11R7.0-1.0.2 \
+	-I../../../builddir/pkg-config/include \
 	-I../../os -I../../render -I../xfree86/common -I../xfree86/os-support \
 	-Dlinux -D__i386__ -D_POSIX_C_SOURCE=199309L -D_POSIX_SOURCE \
 	-D_XOPEN_SOURCE=500L -D_BSD_SOURCE -D_SVID_SOURCE -D_REENTRANT \
