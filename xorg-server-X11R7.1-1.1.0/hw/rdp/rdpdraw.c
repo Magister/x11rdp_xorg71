@@ -1299,22 +1299,81 @@ static void
 rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc* parcs)
 {
   rdpGCPtr priv;
-  RegionRec reg;
+  RegionRec clip_reg;
+  RegionPtr tmpRegion;
   int cd;
+  int lw;
+  int extra;
+  int i;
+  int num_clips;
   GCFuncs* oldFuncs;
+  xRectangle* rects;
+  BoxRec box;
 
   DEBUG_OUT_OPS(("in rdpPolyFillArc\n"));
   GC_OP_PROLOGUE(pGC);
+  rects = 0;
+  if (narcs > 0)
+  {
+    rects = (xRectangle*)Xalloc(narcs * sizeof(xRectangle));
+    lw = pGC->lineWidth;
+    if (lw == 0)
+    {
+      lw = 1;
+    }
+    extra = lw / 2;
+    for (i = 0; i < narcs; i++)
+    {
+      rects[i].x = (parcs[i].x - extra) + pDrawable->x;
+      rects[i].y = (parcs[i].y - extra) + pDrawable->y;
+      rects[i].width = parcs[i].width + lw;
+      rects[i].height = parcs[i].height + lw;
+    }
+  }
   pGC->ops->PolyFillArc(pDrawable, pGC, narcs, parcs);
-  miRegionInit(&reg, NullBox, 0);
-  cd = rdp_get_clip(&reg, pDrawable, pGC);
+  miRegionInit(&clip_reg, NullBox, 0);
+  cd = rdp_get_clip(&clip_reg, pDrawable, pGC);
   if (cd == 1)
   {
+    if (rects != 0)
+    {
+      tmpRegion = miRectsToRegion(narcs, rects, CT_NONE);
+      num_clips = REGION_NUM_RECTS(tmpRegion);
+      if (num_clips > 0)
+      {
+        rdpup_begin_update();
+        for (i = num_clips - 1; i >= 0; i--)
+        {
+          box = REGION_RECTS(tmpRegion)[i];
+          rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+        }
+        rdpup_end_update();
+      }
+      miRegionDestroy(tmpRegion);
+    }
   }
   else if (cd == 2)
   {
+    if (rects != 0)
+    {
+      tmpRegion = miRectsToRegion(narcs, rects, CT_NONE);
+      miIntersect(tmpRegion, tmpRegion, &clip_reg);
+      num_clips = REGION_NUM_RECTS(tmpRegion);
+      if (num_clips > 0)
+      {
+        rdpup_begin_update();
+        for (i = num_clips - 1; i >= 0; i--)
+        {
+          box = REGION_RECTS(tmpRegion)[i];
+          rdpup_send_area(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+        }
+        rdpup_end_update();
+      }
+      miRegionDestroy(tmpRegion);
+    }
   }
-  miRegionUninit(&reg);
+  miRegionUninit(&clip_reg);
+  Xfree(rects);
   GC_OP_EPILOGUE(pGC);
 }
 
