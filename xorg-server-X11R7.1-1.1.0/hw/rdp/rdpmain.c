@@ -24,94 +24,6 @@ Sets up the  functions
 
 #include "rdp.h"
 
-#if 0
-/* here */
-
-#include "micmap.h"
-
-int
-fbListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
-{
-    return miListInstalledColormaps(pScreen, pmaps);
-}
-
-void
-fbInstallColormap(ColormapPtr pmap)
-{
-    miInstallColormap(pmap);
-}
-
-void
-fbUninstallColormap(ColormapPtr pmap)
-{
-    miUninstallColormap(pmap);
-}
-
-void
-fbResolveColor(unsigned short   *pred,
-               unsigned short   *pgreen,
-               unsigned short   *pblue,
-               VisualPtr        pVisual)
-{
-    miResolveColor(pred, pgreen, pblue, pVisual);
-}
-
-Bool
-fbInitializeColormap(ColormapPtr pmap)
-{
-    return miInitializeColormap(pmap);
-}
-
-int
-fbExpandDirectColors (ColormapPtr   pmap,
-                      int           ndef,
-                      xColorItem    *indefs,
-                      xColorItem    *outdefs)
-{
-    return miExpandDirectColors(pmap, ndef, indefs, outdefs);
-}
-
-Bool
-fbCreateDefColormap(ScreenPtr pScreen)
-{
-    return miCreateDefColormap(pScreen);
-}
-
-void
-fbClearVisualTypes(void)
-{
-    miClearVisualTypes();
-}
-
-Bool
-fbSetVisualTypes (int depth, int visuals, int bitsPerRGB)
-{
-    return miSetVisualTypes(depth, visuals, bitsPerRGB, -1);
-}
-
-/*
- * Given a list of formats for a screen, create a list
- * of visuals and depths for the screen which coorespond to
- * the set which can be used with this version of fb.
- */
-
-Bool
-fbInitVisuals (VisualPtr    *visualp, 
-               DepthPtr     *depthp,
-               int          *nvisualp,
-               int          *ndepthp,
-               int          *rootDepthp,
-               VisualID     *defaultVisp,
-               unsigned long    sizes,
-               int          bitsPerRGB)
-{
-    return miInitVisuals(visualp, depthp, nvisualp, ndepthp, rootDepthp,
-                         defaultVisp, sizes, bitsPerRGB, -1);
-}
-
-/* here */
-#endif
-
 rdpScreenInfo g_rdpScreen; /* the one screen */
 ScreenPtr g_pScreen = 0;
 int g_rdpGCIndex = -1;
@@ -251,8 +163,7 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
     g_rdpScreen.sizeInBytes =
            (g_rdpScreen.paddedWidthInBytes * g_rdpScreen.height);
     ErrorF("buffer size %d\n", g_rdpScreen.sizeInBytes);
-    g_rdpScreen.pfbMemory = (char*)Xalloc(g_rdpScreen.sizeInBytes);
-    memset(g_rdpScreen.pfbMemory, 0, g_rdpScreen.sizeInBytes);
+    g_rdpScreen.pfbMemory = (char*)g_malloc(g_rdpScreen.sizeInBytes, 1);
   }
   if (g_rdpScreen.pfbMemory == 0)
   {
@@ -565,7 +476,7 @@ ddxGiveUp(void)
 {
   char unixSocketName[32];
 
-  Xfree(g_rdpScreen.pfbMemory);
+  g_free(g_rdpScreen.pfbMemory);
   if (g_initOutputCalled)
   {
     sprintf(unixSocketName, "/tmp/.X11-unix/X%s", display);

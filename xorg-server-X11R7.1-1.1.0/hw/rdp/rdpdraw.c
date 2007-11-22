@@ -621,7 +621,7 @@ rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode,
   GC_OP_PROLOGUE(pGC);
   if (npt > 32)
   {
-    pts = (DDXPointPtr)Xalloc(sizeof(DDXPointRec) * npt);
+    pts = (DDXPointPtr)g_malloc(sizeof(DDXPointRec) * npt, 0);
   }
   else
   {
@@ -702,7 +702,7 @@ rdpPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode,
   miRegionUninit(&clip_reg);
   if (pts != stack_pts)
   {
-    Xfree(pts);
+    g_free(pts);
   }
   GC_OP_EPILOGUE(pGC);
 }
@@ -731,7 +731,7 @@ rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode,
   ppts = 0;
   if (npt > 0)
   {
-    ppts = (DDXPointPtr)Xalloc(sizeof(DDXPointRec) * npt);
+    ppts = (DDXPointPtr)g_malloc(sizeof(DDXPointRec) * npt, 0);
     for (i = 0; i < npt; i++)
     {
       ppts[i] = pptInit[i];
@@ -808,7 +808,7 @@ rdpPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode,
     }
   }
   miRegionUninit(&clip_reg);
-  Xfree(ppts);
+  g_free(ppts);
   GC_OP_EPILOGUE(pGC);
 }
 
@@ -830,7 +830,7 @@ rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment* pSegs)
   segs = 0;
   if (nseg) /* get the rects */
   {
-    segs = (xSegment*)Xalloc(nseg * sizeof(xSegment));
+    segs = (xSegment*)g_malloc(nseg * sizeof(xSegment), 0);
     for (i = 0; i < nseg; i++)
     {
       segs[i].x1 = pSegs[i].x1 + pDrawable->x;
@@ -880,7 +880,7 @@ rdpPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment* pSegs)
       rdpup_end_update();
     }
   }
-  Xfree(segs);
+  g_free(segs);
   miRegionUninit(&clip_reg);
   GC_OP_EPILOGUE(pGC);
 }
@@ -910,7 +910,7 @@ rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects,
   DEBUG_OUT_OPS(("in rdpPolyRectangle\n"));
   GC_OP_PROLOGUE(pGC);
   /* make a copy of rects */
-  rect1 = (xRectangle*)Xalloc(sizeof(xRectangle) * nrects);
+  rect1 = (xRectangle*)g_malloc(sizeof(xRectangle) * nrects, 0);
   for (i = 0; i < nrects; i++)
   {
     rect1[i] = rects[i];
@@ -921,7 +921,7 @@ rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects,
   regRects = 0;
   if (cd != 0 && nrects > 0)
   {
-    regRects = (xRectangle*)Xalloc(nrects * 4 * sizeof(xRectangle));
+    regRects = (xRectangle*)g_malloc(nrects * 4 * sizeof(xRectangle), 0);
     lw = pGC->lineWidth;
     if (lw < 1)
     {
@@ -1015,8 +1015,8 @@ rdpPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects,
     }
   }
   miRegionUninit(&clip_reg);
-  Xfree(regRects);
-  Xfree(rect1);
+  g_free(regRects);
+  g_free(rect1);
   GC_OP_EPILOGUE(pGC);
 }
 
@@ -1041,7 +1041,7 @@ rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc* parcs)
   rects = 0;
   if (narcs > 0)
   {
-    rects = (xRectangle*)Xalloc(narcs * sizeof(xRectangle));
+    rects = (xRectangle*)g_malloc(narcs * sizeof(xRectangle), 0);
     lw = pGC->lineWidth;
     if (lw == 0)
     {
@@ -1099,7 +1099,7 @@ rdpPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc* parcs)
     }
   }
   miRegionUninit(&clip_reg);
-  Xfree(rects);
+  g_free(rects);
   GC_OP_EPILOGUE(pGC);
 }
 
@@ -1211,13 +1211,13 @@ rdpPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
   DEBUG_OUT_OPS(("in rdpPolyFillRect\n"));
   GC_OP_PROLOGUE(pGC);
   /* make a copy of rects */
-  copy_of_rects = (xRectangle*)Xalloc(sizeof(xRectangle) * nrectFill);
+  copy_of_rects = (xRectangle*)g_malloc(sizeof(xRectangle) * nrectFill, 0);
   for (i = 0; i < nrectFill; i++)
   {
     copy_of_rects[i] = prectInit[i];
   }
   fill_reg = miRectsToRegion(nrectFill, copy_of_rects, CT_NONE);
-  Xfree(copy_of_rects);
+  g_free(copy_of_rects);
   miTranslateRegion(fill_reg, pDrawable->x, pDrawable->y);
   pGC->ops->PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
   miRegionInit(&clip_reg, NullBox, 0);
@@ -1315,7 +1315,7 @@ rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc* parcs)
   rects = 0;
   if (narcs > 0)
   {
-    rects = (xRectangle*)Xalloc(narcs * sizeof(xRectangle));
+    rects = (xRectangle*)g_malloc(narcs * sizeof(xRectangle), 0);
     lw = pGC->lineWidth;
     if (lw == 0)
     {
@@ -1373,7 +1373,7 @@ rdpPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc* parcs)
     }
   }
   miRegionUninit(&clip_reg);
-  Xfree(rects);
+  g_free(rects);
   GC_OP_EPILOGUE(pGC);
 }
 
