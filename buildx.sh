@@ -764,19 +764,26 @@ else
 fi
 
 # xorg-server
-cd xorg-server-X11R7.1-1.1.0
-./configure --prefix=$PREFIXDIR --with-fontdir=/usr/share/fonts/X11 --enable-xglx --with-mesa-source=$BASEDIR/Mesa-6.5
-if ! test $? -eq 0
+
+if ! [ -a builddir/pkg-config/lib/pkgconfig/xorg-server.pc ]
 then
-  echo "error xorg-server"
-  exit 1;
+  cd xorg-server-X11R7.1-1.1.0
+  ./configure --prefix=$PREFIXDIR --with-fontdir=/usr/share/fonts/X11 --enable-xglx --with-mesa-source=$BASEDIR/Mesa-6.5
+  if ! test $? -eq 0
+  then
+    echo "error xorg-server"
+    exit 1;
+  fi
+  make
+  if ! test $? -eq 0
+  then
+    echo "error make xorg-server"
+    exit 1;
+  fi
+  make install
+  cd ..
+else
+  echo "skipping xorg-server"
 fi
-make
-if ! test $? -eq 0
-then
-  echo "error make xorg-server"
-  exit 1;
-fi
-cd ..
 
 echo "all ok"
