@@ -621,6 +621,11 @@ then
     exit 1;
   fi
   make
+  if ! test $? -eq 0
+  then
+    echo "error make xfont"
+    exit 1;
+  fi
   make install
   cd ..
 else
