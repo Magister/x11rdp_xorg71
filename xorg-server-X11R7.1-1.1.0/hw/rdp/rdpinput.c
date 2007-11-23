@@ -262,7 +262,7 @@ KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8* pModMap)
                                      GLYPHS_PER_KEY, 1);
   if (pKeySyms->map == 0)
   {
-    rdpLog("g_malloc failed\n");
+    rdpLog("KbdDeviceInit g_malloc failed\n");
     exit(1);
   }
   for (i = 0; i < MAP_LENGTH * GLYPHS_PER_KEY  ; i++)
