@@ -138,6 +138,7 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
   int dpix;
   int dpiy;
   int ret;
+  Bool vis_found;
   VisualPtr vis;
   PictureScreenPtr ps;
 
@@ -167,6 +168,7 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
   }
   if (g_rdpScreen.pfbMemory == 0)
   {
+    rdpLog("rdpScreenInit g_malloc failed\n");
     return 0;
   }
   miClearVisualTypes();
@@ -178,6 +180,7 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
                          miGetDefaultVisualMask(g_rdpScreen.depth),
                          8, defaultColorVisualClass))
   {
+    rdpLog("rdpScreenInit miSetVisualTypes failed\n");
     return 0;
   }
   miSetPixmapDepths();
@@ -209,8 +212,8 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
   miInitializeBackingStore(pScreen);
 
   /* this is for rgb, not bgr, just doing rgb for now */
-  vis = g_pScreen->visuals + g_pScreen->numVisuals;
-  while (--vis >= pScreen->visuals)
+  vis = g_pScreen->visuals + (g_pScreen->numVisuals - 1);
+  while (vis >= pScreen->visuals)
   {
     if ((vis->class | DynamicClass) == DirectColor)
     {
@@ -221,6 +224,7 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
       vis->offsetRed = g_blueBits + g_greenBits;
       vis->redMask = ((1 << g_redBits) - 1) << vis->offsetRed;
     }
+    vis--;
   }
 
   if (g_rdpScreen.bitsPerPixel > 4)
@@ -280,12 +284,17 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
   /*pScreen->StoreColors = rdpStoreColors;*/
   miPointerInitialize(pScreen, &rdpSpritePointerFuncs,
                       &rdpPointerCursorFuncs, 1);
-  vis = pScreen->visuals;
-  while (vis->vid != pScreen->rootVisual)
+  vis_found = 0;
+  vis = g_pScreen->visuals + (g_pScreen->numVisuals - 1);
+  while (vis >= pScreen->visuals)
   {
-    vis++;
+    if ((vis->vid & 0xffff) == (pScreen->rootVisual & 0xffff))
+    {
+      vis_found = 1;
+    }
+    vis--;
   }
-  if (vis == 0)
+  if (!vis_found)
   {
     rdpLog("rdpScreenInit: couldn't find root visual\n");
     exit(1);
