@@ -215,12 +215,15 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
   vis = g_pScreen->visuals + (g_pScreen->numVisuals - 1);
   while (vis >= pScreen->visuals)
   {
-    vis->offsetBlue = 0;
-    vis->blueMask = (1 << g_blueBits) - 1;
-    vis->offsetGreen = g_blueBits;
-    vis->greenMask = ((1 << g_greenBits) - 1) << vis->offsetGreen;
-    vis->offsetRed = g_blueBits + g_greenBits;
-    vis->redMask = ((1 << g_redBits) - 1) << vis->offsetRed;
+    if ((vis->class | DynamicClass) == DirectColor)
+    {
+      vis->offsetBlue = 0;
+      vis->blueMask = (1 << g_blueBits) - 1;
+      vis->offsetGreen = g_blueBits;
+      vis->greenMask = ((1 << g_greenBits) - 1) << vis->offsetGreen;
+      vis->offsetRed = g_blueBits + g_greenBits;
+      vis->redMask = ((1 << g_redBits) - 1) << vis->offsetRed;
+    }
     vis--;
   }
 
@@ -285,6 +288,7 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
   vis = g_pScreen->visuals + (g_pScreen->numVisuals - 1);
   while (vis >= pScreen->visuals)
   {
+    ErrorF("%p %p\n", vis->vid, pScreen->rootVisual);
     if ((vis->vid & 0xffff) == (pScreen->rootVisual & 0xffff))
     {
       vis_found = 1;
