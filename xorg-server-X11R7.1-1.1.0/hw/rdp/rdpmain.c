@@ -288,8 +288,7 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
   vis = g_pScreen->visuals + (g_pScreen->numVisuals - 1);
   while (vis >= pScreen->visuals)
   {
-    ErrorF("%p %p\n", vis->vid, pScreen->rootVisual);
-    if ((vis->vid & 0xffff) == (pScreen->rootVisual & 0xffff))
+    if (vis->vid == pScreen->rootVisual)
     {
       vis_found = 1;
     }
