@@ -610,6 +610,23 @@ else
   echo "skipping fontenc"
 fi
 
+# freetype
+if ! [ -a builddir/pkg-config/lib/pkgconfig/freetype2.pc ]
+then
+  cd freetype-2.1.10
+  ./configure --prefix=$PREFIXDIR
+  if ! test $? -eq 0
+  then
+    echo "error freetype"
+    exit 1;
+  fi
+  make
+  make install
+  cd ..
+else
+  echo "skipping freetype"
+fi
+
 # xfont
 if ! [ -a builddir/pkg-config/lib/pkgconfig/xfont.pc ]
 then
