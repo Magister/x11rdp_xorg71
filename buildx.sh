@@ -1,22 +1,20 @@
 #!/bin/sh
 
-BASEDIR=$PWD
-PREFIXDIR=$PWD/builddir/pkg-config
+SRCDIR=$PWD
 
-if ! test -d builddir
+PREFIXDIR=/opt/X11rdp
+PCFILEDIR=$PREFIXDIR/lib/pkgconfig
+
+if ! test -d $PREFIXDIR
 then
-  mkdir builddir
+  echo "error directory /opt/X11rdp doesn't exist"
+  exit 1;
 fi
 
-if ! test -d builddir/pkg-config
-then
-  mkdir builddir/pkg-config
-fi
-
-export PKG_CONFIG_PATH=$BASEDIR/builddir/pkg-config/lib/pkgconfig
+export PKG_CONFIG_PATH=$PCFILEDIR
 
 # xf86dri
-if ! test -f builddir/pkg-config/lib/pkgconfig/xf86driproto.pc
+if ! test -f $PCFILEDIR/xf86driproto.pc
 then
   cd xf86driproto-X11R7.0-2.0.3
   ./configure --prefix=$PREFIXDIR
@@ -33,7 +31,7 @@ else
 fi
 
 # glproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/glproto.pc
+if ! test -f $PCFILEDIR/glproto.pc
 then
   cd glproto-X11R7.1-1.4.7
   ./configure --prefix=$PREFIXDIR
@@ -50,7 +48,7 @@ else
 fi
 
 # randrproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/randrproto.pc
+if ! test -f $PCFILEDIR/randrproto.pc
 then
   cd randrproto-X11R7.0-1.1.2
   ./configure --prefix=$PREFIXDIR
@@ -67,7 +65,7 @@ else
 fi
 
 # renderproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/renderproto.pc
+if ! test -f $PCFILEDIR/renderproto.pc
 then
   cd renderproto-X11R7.0-0.9.2
   ./configure --prefix=$PREFIXDIR
@@ -84,7 +82,7 @@ else
 fi
 
 # fixesproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/fixesproto.pc
+if ! test -f $PCFILEDIR/fixesproto.pc
 then
   cd fixesproto-X11R7.1-4.0
   ./configure --prefix=$PREFIXDIR
@@ -101,7 +99,7 @@ else
 fi
 
 # damageproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/damageproto.pc
+if ! test -f $PCFILEDIR/damageproto.pc
 then
   cd damageproto-X11R7.0-1.0.3
   ./configure --prefix=$PREFIXDIR
@@ -118,7 +116,7 @@ else
 fi
 
 # xcmiscproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/xcmiscproto.pc
+if ! test -f $PCFILEDIR/xcmiscproto.pc
 then
   cd xcmiscproto-X11R7.0-1.1.2
   ./configure --prefix=$PREFIXDIR
@@ -135,7 +133,7 @@ else
 fi
 
 # xextproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/xextproto.pc
+if ! test -f $PCFILEDIR/xextproto.pc
 then
   cd xextproto-X11R7.0-7.0.2
   ./configure --prefix=$PREFIXDIR
@@ -152,7 +150,7 @@ else
 fi
 
 # xproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/xproto.pc
+if ! test -f $PCFILEDIR/xproto.pc
 then
   cd xproto-X11R7.1-7.0.5
   ./configure --prefix=$PREFIXDIR
@@ -169,7 +167,7 @@ else
 fi
 
 # xtrans
-if ! test -f builddir/pkg-config/lib/pkgconfig/xtrans.pc
+if ! test -f $PCFILEDIR/xtrans.pc
 then
   cd xtrans-X11R7.0-1.0.0
   ./configure --prefix=$PREFIXDIR
@@ -186,7 +184,7 @@ else
 fi
 
 # xf86miscproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/xf86miscproto.pc
+if ! test -f $PCFILEDIR/xf86miscproto.pc
 then
   cd xf86miscproto-X11R7.0-0.9.2
   ./configure --prefix=$PREFIXDIR
@@ -203,7 +201,7 @@ else
 fi
 
 # xf86vidmodeproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/xf86vidmodeproto.pc
+if ! test -f $PCFILEDIR/xf86vidmodeproto.pc
 then
   cd xf86vidmodeproto-X11R7.0-2.2.2
   ./configure --prefix=$PREFIXDIR
@@ -220,7 +218,7 @@ else
 fi
 
 # xf86bigfontproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/xf86bigfontproto.pc
+if ! test -f $PCFILEDIR/xf86bigfontproto.pc
 then
   cd xf86bigfontproto-X11R7.0-1.1.2
   ./configure --prefix=$PREFIXDIR
@@ -237,7 +235,7 @@ else
 fi
 
 # scrnsaverproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/scrnsaverproto.pc
+if ! test -f $PCFILEDIR/scrnsaverproto.pc
 then
   cd scrnsaverproto-X11R7.1-1.1.0
   ./configure --prefix=$PREFIXDIR
@@ -254,7 +252,7 @@ else
 fi
 
 # bigreqsproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/bigreqsproto.pc
+if ! test -f $PCFILEDIR/bigreqsproto.pc
 then
   cd bigreqsproto-X11R7.0-1.0.2
   ./configure --prefix=$PREFIXDIR
@@ -271,7 +269,7 @@ else
 fi
 
 # resourceproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/resourceproto.pc
+if ! test -f $PCFILEDIR/resourceproto.pc
 then
   cd resourceproto-X11R7.0-1.0.2
   ./configure --prefix=$PREFIXDIR
@@ -288,7 +286,7 @@ else
 fi
 
 # fontsproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/fontsproto.pc
+if ! test -f $PCFILEDIR/fontsproto.pc
 then
   cd fontsproto-X11R7.0-2.0.2
   ./configure --prefix=$PREFIXDIR
@@ -305,7 +303,7 @@ else
 fi
 
 # inputproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/inputproto.pc
+if ! test -f $PCFILEDIR/inputproto.pc
 then
   cd inputproto-X11R7.0-1.3.2
   ./configure --prefix=$PREFIXDIR
@@ -322,7 +320,7 @@ else
 fi
 
 # xf86dgaproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/xf86dgaproto.pc
+if ! test -f $PCFILEDIR/xf86dgaproto.pc
 then
   cd xf86dgaproto-X11R7.0-2.0.2
   ./configure --prefix=$PREFIXDIR
@@ -339,7 +337,7 @@ else
 fi
 
 # videoproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/videoproto.pc
+if ! test -f $PCFILEDIR/videoproto.pc
 then
   cd videoproto-X11R7.0-2.2.2
   ./configure --prefix=$PREFIXDIR
@@ -356,7 +354,7 @@ else
 fi
 
 # compositeproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/compositeproto.pc
+if ! test -f $PCFILEDIR/compositeproto.pc
 then
   cd compositeproto-X11R7.1-0.3.1
   ./configure --prefix=$PREFIXDIR
@@ -373,7 +371,7 @@ else
 fi
 
 # trapproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/trapproto.pc
+if ! test -f $PCFILEDIR/trapproto.pc
 then
   cd trapproto-X11R7.0-3.4.3
   ./configure --prefix=$PREFIXDIR
@@ -390,7 +388,7 @@ else
 fi
 
 # recordproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/recordproto.pc
+if ! test -f $PCFILEDIR/recordproto.pc
 then
   cd recordproto-X11R7.0-1.13.2
   ./configure --prefix=$PREFIXDIR
@@ -407,7 +405,7 @@ else
 fi
 
 # xineramaproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/xineramaproto.pc
+if ! test -f $PCFILEDIR/xineramaproto.pc
 then
   cd xineramaproto-X11R7.0-1.1.2
   ./configure --prefix=$PREFIXDIR
@@ -424,7 +422,7 @@ else
 fi
 
 # ice
-if ! test -f builddir/pkg-config/lib/pkgconfig/ice.pc
+if ! test -f $PCFILEDIR/ice.pc
 then
   cd libICE-X11R7.1-1.0.1
   ./configure --prefix=$PREFIXDIR
@@ -441,7 +439,7 @@ else
 fi
 
 # sm
-if ! test -f builddir/pkg-config/lib/pkgconfig/sm.pc
+if ! test -f $PCFILEDIR/sm.pc
 then
   cd libSM-X11R7.1-1.0.1
   ./configure --prefix=$PREFIXDIR
@@ -458,7 +456,7 @@ else
 fi
 
 # xau
-if ! test -f builddir/pkg-config/lib/pkgconfig/xau.pc
+if ! test -f $PCFILEDIR/xau.pc
 then
   cd libXau-X11R7.1-1.0.1
   ./configure --prefix=$PREFIXDIR
@@ -475,7 +473,7 @@ else
 fi
 
 # kbproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/kbproto.pc
+if ! test -f $PCFILEDIR/kbproto.pc
 then
   cd kbproto-X11R7.0-1.0.2
   ./configure --prefix=$PREFIXDIR
@@ -492,7 +490,7 @@ else
 fi
 
 # Xdmcp
-if ! test -f builddir/pkg-config/lib/pkgconfig/xdmcp.pc
+if ! test -f $PCFILEDIR/xdmcp.pc
 then
   cd libXdmcp-X11R7.1-1.0.1
   ./configure --prefix=$PREFIXDIR
@@ -509,7 +507,7 @@ else
 fi
 
 # x11
-if ! test -f builddir/pkg-config/lib/pkgconfig/x11.pc
+if ! test -f $PCFILEDIR/x11.pc
 then
   cd libX11-X11R7.1-1.0.1
   ./configure --prefix=$PREFIXDIR
@@ -526,7 +524,7 @@ else
 fi
 
 # xt
-if ! test -f builddir/pkg-config/lib/pkgconfig/xt.pc
+if ! test -f $PCFILEDIR/xt.pc
 then
   cd libXt-X11R7.1-1.0.2
   ./configure --prefix=$PREFIXDIR
@@ -543,7 +541,7 @@ else
 fi
 
 # evieext evieproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/evieproto.pc
+if ! test -f $PCFILEDIR/evieproto.pc
 then
   cd evieext-X11R7.0-1.0.2
   ./configure --prefix=$PREFIXDIR
@@ -560,7 +558,7 @@ else
 fi
 
 # xkbfile
-if ! test -f builddir/pkg-config/lib/pkgconfig/xkbfile.pc
+if ! test -f $PCFILEDIR/xkbfile.pc
 then
   cd libxkbfile-X11R7.1-1.0.3
   ./configure --prefix=$PREFIXDIR
@@ -577,7 +575,7 @@ else
 fi
 
 # fontcacheproto
-if ! test -f builddir/pkg-config/lib/pkgconfig/fontcacheproto.pc
+if ! test -f $PCFILEDIR/fontcacheproto.pc
 then
   cd fontcacheproto-X11R7.0-0.1.2
   ./configure --prefix=$PREFIXDIR
@@ -594,7 +592,7 @@ else
 fi
 
 # fontenc
-if ! test -f builddir/pkg-config/lib/pkgconfig/fontenc.pc
+if ! test -f $PCFILEDIR/fontenc.pc
 then
   cd libfontenc-X11R7.1-1.0.2
   ./configure --prefix=$PREFIXDIR
@@ -611,7 +609,7 @@ else
 fi
 
 # freetype
-if ! test -f builddir/pkg-config/lib/pkgconfig/freetype2.pc
+if ! test -f $PCFILEDIR/freetype2.pc
 then
   cd freetype-2.1.10
   ./configure --prefix=$PREFIXDIR
@@ -628,7 +626,7 @@ else
 fi
 
 # xfont
-if ! test -f builddir/pkg-config/lib/pkgconfig/xfont.pc
+if ! test -f $PCFILEDIR/xfont.pc
 then
   cd libXfont-X11R7.1-1.1.0
   ./configure --prefix=$PREFIXDIR
@@ -650,7 +648,7 @@ else
 fi
 
 # Xext
-if ! test -f builddir/pkg-config/lib/pkgconfig/xext.pc
+if ! test -f $PCFILEDIR/xext.pc
 then
   cd libXext-X11R7.1-1.0.1
   ./configure --prefix=$PREFIXDIR
@@ -667,7 +665,7 @@ else
 fi
 
 # xmu
-if ! test -f builddir/pkg-config/lib/pkgconfig/xmu.pc
+if ! test -f $PCFILEDIR/xmu.pc
 then
   cd libXmu-X11R7.1-1.0.1
   ./configure --prefix=$PREFIXDIR
@@ -684,7 +682,7 @@ else
 fi
 
 # xkbui
-if ! test -f builddir/pkg-config/lib/pkgconfig/xkbui.pc
+if ! test -f $PCFILEDIR/xkbui.pc
 then
   cd libxkbui-X11R7.1-1.0.2
   ./configure --prefix=$PREFIXDIR
@@ -701,7 +699,7 @@ else
 fi
 
 # xxf86misc
-if ! test -f builddir/pkg-config/lib/pkgconfig/xxf86misc.pc
+if ! test -f $PCFILEDIR/xxf86misc.pc
 then
   cd libXxf86misc-X11R7.1-1.0.1
   ./configure --prefix=$PREFIXDIR
@@ -718,7 +716,7 @@ else
 fi
 
 # xxf86vm
-if ! test -f builddir/pkg-config/lib/pkgconfig/xxf86vm.pc
+if ! test -f $PCFILEDIR/xxf86vm.pc
 then
   cd libXxf86vm-X11R7.1-1.0.1
   ./configure --prefix=$PREFIXDIR
@@ -735,7 +733,7 @@ else
 fi
 
 # xpm
-if ! test -f builddir/pkg-config/lib/pkgconfig/xpm.pc
+if ! test -f $PCFILEDIR/xpm.pc
 then
   cd libXpm-X11R7.1-3.5.5
   ./configure --prefix=$PREFIXDIR
@@ -752,7 +750,7 @@ else
 fi
 
 # xaw7
-if ! test -f builddir/pkg-config/lib/pkgconfig/xaw7.pc
+if ! test -f $PCFILEDIR/xaw7.pc
 then
   cd libXaw-X11R7.1-1.0.2
   ./configure --prefix=$PREFIXDIR
@@ -769,7 +767,7 @@ else
 fi
 
 # libdrm - special
-if ! test -f builddir/pkg-config/lib/pkgconfig/libdrm.pc
+if ! test -f $PCFILEDIR/libdrm.pc
 then
   cd libdrm-2.3.0
   ./configure --prefix=$PREFIXDIR
@@ -786,11 +784,10 @@ else
 fi
 
 # xorg-server
-
-if ! test -f builddir/pkg-config/lib/pkgconfig/xorg-server.pc
+if ! test -f $PCFILEDIR/xorg-server.pc
 then
   cd xorg-server-X11R7.1-1.1.0
-  ./configure --prefix=$PREFIXDIR --with-fontdir=/usr/share/fonts/X11 --enable-xglx --with-mesa-source=$BASEDIR/Mesa-6.5
+  ./configure --prefix=$PREFIXDIR --enable-xglx --with-mesa-source=$SRCDIR/Mesa-6.5
   if ! test $? -eq 0
   then
     echo "error xorg-server"
