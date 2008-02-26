@@ -20,9 +20,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "rdp.h"
-/*#include "arch.h"*/
-/*#include "parse.h"*/
-/*#include "os_calls.h"*/
 
 #define DEBUG_OUT_UP(arg)
 /*#define DEBUG_OUT_UP(arg) ErrorF arg*/
@@ -274,35 +271,7 @@ param4 %d\n", msg, param1, param2, param3, param4);*/
         KbdAddEvent(msg == 15, param1, param2, param3, param4);
         break;
       case 17: /* from RDP_INPUT_SYNCHRONIZE */
-#if 0
-        /* scroll lock */
-        if (param1 & 1)
-        {
-          KbdAddEvent(1, 70, 0, 70, 0);
-        }
-        else
-        {
-          KbdAddEvent(0, 70, 49152, 70, 49152);
-        }
-        /* num lock */
-        if (param1 & 2)
-        {
-          KbdAddEvent(1, 69, 0, 69, 0);
-        }
-        else
-        {
-          KbdAddEvent(0, 69, 49152, 69, 49152);
-        }
-        /* caps lock */
-        if (param1 & 4)
-        {
-          KbdAddEvent(1, 58, 0, 58, 0);
-        }
-        else
-        {
-          KbdAddEvent(0, 58, 49152, 58, 49152);
-        }
-#endif
+        KbdSync(param1);
         break;
       case 100:
         g_cursor_x = param1;
@@ -427,7 +396,7 @@ rdpup_check(void)
     }
     else
     {
-      ErrorF("rejecting connection\n");
+      ErrorF("rejecting connection, already got a connection\n");
       g_sleep(10);
       g_tcp_close(g_tcp_accept(g_listen_sck));
     }
@@ -654,6 +623,10 @@ rdpup_set_cursor(short x, short y, char* cur_data, char* cur_mask)
     rdpup_pre_check(6 + 32 * (32 * 3) + 32 * (32 / 8));
     out_uint16_le(g_out_s, 19);
     g_count++;
+    x = MAX(0, x);
+    x = MIN(31, x);
+    y = MAX(0, y);
+    y = MIN(31, y);
     out_uint16_le(g_out_s, x);
     out_uint16_le(g_out_s, y);
     out_uint8a(g_out_s, cur_data, 32 * (32 * 3));

@@ -21,27 +21,58 @@ keyboard and mouse stuff
 
 */
 
+/* control notes */
+/* rdesktop sends control before scan code 69 but it doesn't set the
+   flags right so control down is used to determine between pause and
+   num lock */
+/* this should be fixed in rdesktop */
+/* g_pause_spe flag for specal control sent by ms client before scan code
+   69 is sent to tell that its pause, not num lock.  both pause and num
+   lock use scan code 69 */
+
+/* tab notes */
+/* mstsc send tab up without a tab down to mark the mstsc has gained focus
+   this should have sure control alt and shift are all up
+   rdesktop does not do this */
+/* this should be fixed in rdesktop */
+
 #include "rdp.h"
 
-static DeviceIntPtr kbdDevice;
+static DeviceIntPtr g_kbdDevice = 0;
 static int g_old_button_mask = 0;
-static int g_caps_lock = 0;
+static int g_pause_spe = 0;
+static int g_ctrl_down = 0;
+static int g_alt_down = 0;
+static int g_shift_down = 0;
+static int g_tab_down = 0;
+/* this is toggled every time num lock key is released, not like the
+   above *_down vars */
+static int g_scroll_lock_down = 0;
 extern int g_Bpp; /* from rdpmain.c */
 extern ScreenPtr g_pScreen; /* from rdpmain.c */
 extern rdpScreenInfo rdpScreen; /* from rdpmain.c */
 
-#define CONTROL_L_KEY_CODE MIN_KEY_CODE
-#define CONTROL_R_KEY_CODE (MIN_KEY_CODE + 1)
 #define MIN_KEY_CODE 8
 #define MAX_KEY_CODE 255
-#define NO_OF_KEYS (MAX_KEY_CODE - MIN_KEY_CODE + 1)
+#define NO_OF_KEYS ((MAX_KEY_CODE - MIN_KEY_CODE) + 1)
 #define GLYPHS_PER_KEY 2
-#define SHIFT_L_KEY_CODE (MIN_KEY_CODE + 2)
-#define SHIFT_R_KEY_CODE (MIN_KEY_CODE + 3)
-#define META_L_KEY_CODE (MIN_KEY_CODE + 4)
-#define META_R_KEY_CODE (MIN_KEY_CODE + 5)
-#define ALT_L_KEY_CODE (MIN_KEY_CODE + 6)
-#define ALT_R_KEY_CODE (MIN_KEY_CODE + 7)
+/* control */
+#define CONTROL_L_KEY_CODE 37
+#define CONTROL_R_KEY_CODE 109
+/* shift */
+#define SHIFT_L_KEY_CODE 50
+#define SHIFT_R_KEY_CODE 62
+/* win keys */
+#define SUPER_L_KEY_CODE 115
+#define SUPER_R_KEY_CODE 116
+/* alt */
+#define ALT_L_KEY_CODE 64
+#define ALT_R_KEY_CODE 113
+/* caps lock */
+#define CAPS_LOCK_KEY_CODE 66
+/* num lock */
+#define NUM_LOCK_KEY_CODE 77
+
 #define N_PREDEFINED_KEYS (sizeof(kbdMap) / (sizeof(KeySym) * GLYPHS_PER_KEY))
 
 /* Copied from Xvnc/lib/font/util/utilbitmap.c */
@@ -81,156 +112,127 @@ static unsigned char g_reverse_byte[0x100] =
   0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
 };
 
-
 static KeySym kbdMap[] =
 {
-  /* non shift          shift                  index */
-  /* key map */
-  XK_Control_L,         NoSymbol,             /* 8 */
-  XK_Control_R,         NoSymbol,             /* 9 */
-  XK_Shift_L,           NoSymbol,             /* 10 */
-  XK_Shift_R,           NoSymbol,
-  XK_Meta_L,            NoSymbol,
-  XK_Meta_R,            NoSymbol,
-  XK_Alt_L,             NoSymbol,
-  XK_Alt_R,             NoSymbol,
-  /* Standard US keyboard */
-  XK_space,             NoSymbol,
-  XK_0,                 XK_parenright,
-  XK_1,                 XK_exclam,
-  XK_2,                 XK_at,
-  XK_3,                 XK_numbersign,        /* 20 */
-  XK_4,                 XK_dollar,
-  XK_5,                 XK_percent,
-  XK_6,                 XK_asciicircum,
-  XK_7,                 XK_ampersand,
-  XK_8,                 XK_asterisk,
-  XK_9,                 XK_parenleft,
-  XK_minus,             XK_underscore,
-  XK_equal,             XK_plus,
-  XK_bracketleft,       XK_braceleft,
-  XK_bracketright,      XK_braceright,        /* 30 */
-  XK_semicolon,         XK_colon,
-  XK_apostrophe,        XK_quotedbl,
-  XK_grave,             XK_asciitilde,
-  XK_comma,             XK_less,
-  XK_period,            XK_greater,
-  XK_slash,             XK_question,
-  XK_backslash,         XK_bar,
-  XK_a,                 XK_A,
-  XK_b,                 XK_B,
-  XK_c,                 XK_C,                 /* 40 */
-  XK_d,                 XK_D,
-  XK_e,                 XK_E,
-  XK_f,                 XK_F,
-  XK_g,                 XK_G,
-  XK_h,                 XK_H,
-  XK_i,                 XK_I,
-  XK_j,                 XK_J,
-  XK_k,                 XK_K,
-  XK_l,                 XK_L,
-  XK_m,                 XK_M,                 /* 50 */
-  XK_n,                 XK_N,
-  XK_o,                 XK_O,
-  XK_p,                 XK_P,
-  XK_q,                 XK_Q,
-  XK_r,                 XK_R,
-  XK_s,                 XK_S,
-  XK_t,                 XK_T,
-  XK_u,                 XK_U,
-  XK_v,                 XK_V,
-  XK_w,                 XK_W,                 /* 60 */
-  XK_x,                 XK_X,
-  XK_y,                 XK_Y,
-  XK_z,                 XK_Z,
-  /* Other useful keys */
-  XK_BackSpace,         NoSymbol,
-  XK_Return,            NoSymbol,
-  XK_Tab,               NoSymbol,
-  XK_Escape,            NoSymbol,
-  XK_Delete,            NoSymbol,
-  XK_Home,              NoSymbol,
-  XK_End,               NoSymbol,             /* 70 */
-  XK_Page_Up,           NoSymbol,
-  XK_Page_Down,         NoSymbol,
-  XK_Up,                NoSymbol,
-  XK_Down,              NoSymbol,
-  XK_Left,              NoSymbol,
-  XK_Right,             NoSymbol,
-  XK_F1,                NoSymbol,
-  XK_F2,                NoSymbol,
-  XK_F3,                NoSymbol,
-  XK_F4,                NoSymbol,             /* 80 */
-  XK_F5,                NoSymbol,
-  XK_F6,                NoSymbol,
-  XK_F7,                NoSymbol,
-  XK_F8,                NoSymbol,
-  XK_F9,                NoSymbol,
-  XK_F10,               NoSymbol,
-  XK_F11,               NoSymbol,
-  XK_F12,               NoSymbol,
-
-  XK_KP_Multiply,       NoSymbol,             /* 89 */
-  XK_Print,             NoSymbol,             /* 90 */
-  XK_Caps_Lock,         NoSymbol,             /* 91 */
-  XK_Num_Lock,          NoSymbol,             /* 92 */
-  XK_Scroll_Lock,       NoSymbol,             /* 93 */
-  XK_KP_Home,           NoSymbol,             /* 94 */
-  XK_KP_7,              NoSymbol,             /* 95 */
-  XK_KP_Up,             NoSymbol,             /* 96 */
-  XK_KP_8,              NoSymbol,             /* 97 */
-  XK_KP_Page_Up,        NoSymbol,             /* 98 */
-  XK_KP_9,              NoSymbol,             /* 99 */
-  XK_KP_Subtract,       NoSymbol,             /* 100 */
-  XK_KP_Left,           NoSymbol,             /* 101 */
-  XK_KP_4,              NoSymbol,             /* 102 */
-  XK_KP_5,              NoSymbol,             /* 103 */
-  XK_KP_Right,          NoSymbol,             /* 104 */
-  XK_KP_6,              NoSymbol,             /* 105 */
-  XK_KP_Add,            NoSymbol,             /* 106 */
-  XK_KP_End,            NoSymbol,             /* 107 */
-  XK_KP_1,              NoSymbol,             /* 108 */
-  XK_KP_Down,           NoSymbol,             /* 109 */
-  XK_KP_2,              NoSymbol,             /* 110 */
-  XK_KP_Page_Down,      NoSymbol,             /* 111 */
-  XK_KP_3,              NoSymbol,             /* 112 */
-  XK_KP_Insert,         NoSymbol,             /* 113 */
-  XK_KP_0,              NoSymbol,             /* 114 */
-  XK_Insert,            NoSymbol,             /* 115 */
-  XK_KP_Delete,         NoSymbol,             /* 116 */
-  XK_KP_Decimal,        NoSymbol,             /* 117 */
-  XK_A,                 XK_a,                 /* 118 */
-  XK_B,                 XK_b,                 /* 119 */
-  XK_C,                 XK_c,                 /* 120 */
-  XK_D,                 XK_d,                 /* 121 */
-  XK_E,                 XK_e,                 /* 122 */
-  XK_F,                 XK_f,                 /* 123 */
-  XK_G,                 XK_g,                 /* 124 */
-  XK_H,                 XK_h,                 /* 125 */
-  XK_I,                 XK_i,                 /* 126 */
-  XK_J,                 XK_j,                 /* 127 */
-  XK_K,                 XK_k,                 /* 128 */
-  XK_L,                 XK_l,                 /* 129 */
-  XK_M,                 XK_m,                 /* 130 */
-  XK_N,                 XK_n,                 /* 131 */
-  XK_O,                 XK_o,                 /* 132 */
-  XK_P,                 XK_p,                 /* 133 */
-  XK_Q,                 XK_q,                 /* 134 */
-  XK_R,                 XK_r,                 /* 135 */
-  XK_S,                 XK_s,                 /* 136 */
-  XK_T,                 XK_t,                 /* 137 */
-  XK_U,                 XK_u,                 /* 138 */
-  XK_V,                 XK_v,                 /* 139 */
-  XK_W,                 XK_w,                 /* 140 */
-  XK_X,                 XK_x,                 /* 141 */
-  XK_Y,                 XK_y,                 /* 142 */
-  XK_Z,                 XK_z                  /* 143 */
-
+  NoSymbol,        NoSymbol,        /* 8 */
+  XK_Escape,       NoSymbol,        /* 9 */
+  XK_1,            XK_exclam,       /* 10 */
+  XK_2,            XK_at,
+  XK_3,            XK_numbersign,
+  XK_4,            XK_dollar,
+  XK_5,            XK_percent,
+  XK_6,            XK_asciicircum,
+  XK_7,            XK_ampersand,
+  XK_8,            XK_asterisk,
+  XK_9,            XK_parenleft,
+  XK_0,            XK_parenright,
+  XK_minus,        XK_underscore,   /* 20 */
+  XK_equal,        XK_plus,
+  XK_BackSpace,    NoSymbol,
+  XK_Tab,          XK_ISO_Left_Tab,
+  XK_Q,            NoSymbol,
+  XK_W,            NoSymbol,
+  XK_E,            NoSymbol,
+  XK_R,            NoSymbol,
+  XK_T,            NoSymbol,
+  XK_Y,            NoSymbol,
+  XK_U,            NoSymbol,        /* 30 */
+  XK_I,            NoSymbol,
+  XK_O,            NoSymbol,
+  XK_P,            NoSymbol,
+  XK_bracketleft,  XK_braceleft,
+  XK_bracketright, XK_braceright,
+  XK_Return,       NoSymbol,
+  XK_Control_L,    NoSymbol,
+  XK_A,            NoSymbol,
+  XK_S,            NoSymbol,
+  XK_D,            NoSymbol,        /* 40 */
+  XK_F,            NoSymbol,
+  XK_G,            NoSymbol,
+  XK_H,            NoSymbol,
+  XK_J,            NoSymbol,
+  XK_K,            NoSymbol,
+  XK_L,            NoSymbol,
+  XK_semicolon,    XK_colon,
+  XK_apostrophe,   XK_quotedbl,
+  XK_grave,	   XK_asciitilde,
+  XK_Shift_L,      NoSymbol,        /* 50 */
+  XK_backslash,    XK_bar,
+  XK_Z,            NoSymbol,
+  XK_X,            NoSymbol,
+  XK_C,            NoSymbol,
+  XK_V,            NoSymbol,
+  XK_B,            NoSymbol,
+  XK_N,            NoSymbol,
+  XK_M,            NoSymbol,
+  XK_comma,        XK_less,
+  XK_period,       XK_greater,      /* 60 */
+  XK_slash,        XK_question,
+  XK_Shift_R,      NoSymbol,
+  XK_KP_Multiply,  NoSymbol,
+  XK_Alt_L,        NoSymbol,
+  XK_space,        NoSymbol,
+  XK_Caps_Lock,    NoSymbol,
+  XK_F1,           NoSymbol,
+  XK_F2,           NoSymbol,
+  XK_F3,           NoSymbol,
+  XK_F4,           NoSymbol,        /* 70 */
+  XK_F5,           NoSymbol,
+  XK_F6,           NoSymbol,
+  XK_F7,           NoSymbol,
+  XK_F8,           NoSymbol,
+  XK_F9,           NoSymbol,
+  XK_F10,          NoSymbol,
+  XK_Num_Lock,     NoSymbol,
+  XK_Scroll_Lock,  NoSymbol,
+  XK_KP_Home,      XK_KP_7,
+  XK_KP_Up,        XK_KP_8,         /* 80 */
+  XK_KP_Prior,     XK_KP_9,
+  XK_KP_Subtract,  NoSymbol,
+  XK_KP_Left,      XK_KP_4,
+  XK_KP_Begin,     XK_KP_5,
+  XK_KP_Right,     XK_KP_6,
+  XK_KP_Add,       NoSymbol,
+  XK_KP_End,       XK_KP_1,
+  XK_KP_Down,      XK_KP_2,
+  XK_KP_Next,      XK_KP_3,
+  XK_KP_Insert,    XK_KP_0,         /* 90 */
+  XK_KP_Delete,    XK_KP_Decimal,
+  NoSymbol,        NoSymbol,
+  NoSymbol,        NoSymbol,
+  NoSymbol,        NoSymbol,
+  XK_F11,          NoSymbol,
+  XK_F12,          NoSymbol,
+  XK_Home,         NoSymbol,
+  XK_Up,           NoSymbol,
+  XK_Prior,        NoSymbol,
+  XK_Left,         NoSymbol,        /* 100 */
+  XK_Print,        NoSymbol,
+  XK_Right,        NoSymbol,
+  XK_End,          NoSymbol,
+  XK_Down,         NoSymbol,
+  XK_Next,         NoSymbol,
+  XK_Insert,       NoSymbol,
+  XK_Delete,       NoSymbol,
+  XK_KP_Enter,     NoSymbol,
+  XK_Control_R,    NoSymbol,
+  XK_Pause,        NoSymbol,        /* 110 */
+  XK_Print,        NoSymbol,
+  XK_KP_Divide,    NoSymbol,
+  XK_Alt_R,        NoSymbol,
+  NoSymbol,        NoSymbol,
+  XK_Super_L,      NoSymbol,
+  XK_Super_R,      NoSymbol,
+  XK_Menu,         NoSymbol,
+  NoSymbol,        NoSymbol,
+  NoSymbol,        NoSymbol,
+  NoSymbol,        NoSymbol,        /* 120 */
+  NoSymbol,        NoSymbol
 };
 
 /******************************************************************************/
 static void
-rdpSendBell()
+rdpSendBell(void)
 {
   ErrorF("hi rdpSendBell\n");
 }
@@ -242,30 +244,32 @@ KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8* pModMap)
   int i;
 
   ErrorF("hi KbdDeviceInit\n");
-  kbdDevice = pDevice;
+  g_kbdDevice = pDevice;
   for (i = 0; i < MAP_LENGTH; i++)
   {
     pModMap[i] = NoSymbol;
   }
-  pModMap[CONTROL_L_KEY_CODE] = ControlMask;
-  pModMap[CONTROL_R_KEY_CODE] = ControlMask;
   pModMap[SHIFT_L_KEY_CODE] = ShiftMask;
   pModMap[SHIFT_R_KEY_CODE] = ShiftMask;
-  pModMap[META_L_KEY_CODE] = Mod4Mask;
-  pModMap[META_R_KEY_CODE] = Mod4Mask;
+  pModMap[CAPS_LOCK_KEY_CODE] = LockMask;
+  pModMap[CONTROL_L_KEY_CODE] = ControlMask;
+  pModMap[CONTROL_R_KEY_CODE] = ControlMask;
   pModMap[ALT_L_KEY_CODE] = Mod1Mask;
   pModMap[ALT_R_KEY_CODE] = Mod1Mask;
+  pModMap[NUM_LOCK_KEY_CODE] = Mod2Mask;
+  pModMap[SUPER_L_KEY_CODE] = Mod4Mask;
+  pModMap[SUPER_R_KEY_CODE] = Mod4Mask;
   pKeySyms->minKeyCode = MIN_KEY_CODE;
   pKeySyms->maxKeyCode = MAX_KEY_CODE;
   pKeySyms->mapWidth = GLYPHS_PER_KEY;
-  pKeySyms->map = (KeySym *)g_malloc(sizeof(KeySym) * MAP_LENGTH *
-                                     GLYPHS_PER_KEY, 1);
+  pKeySyms->map = (KeySym*)g_malloc(sizeof(KeySym) * MAP_LENGTH *
+                                    GLYPHS_PER_KEY, 1);
   if (pKeySyms->map == 0)
   {
     rdpLog("KbdDeviceInit g_malloc failed\n");
     exit(1);
   }
-  for (i = 0; i < MAP_LENGTH * GLYPHS_PER_KEY  ; i++)
+  for (i = 0; i < MAP_LENGTH * GLYPHS_PER_KEY; i++)
   {
     pKeySyms->map[i] = NoSymbol;
   }
@@ -329,7 +333,7 @@ rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
 
 /******************************************************************************/
 void
-PtrDeviceControl(DevicePtr dev, PtrCtrl* ctrl)
+PtrDeviceControl(DeviceIntPtr dev, PtrCtrl* ctrl)
 {
   ErrorF("hi PtrDeviceControl\n");
 }
@@ -367,7 +371,7 @@ rdpMouseProc(DeviceIntPtr pDevice, int onoff)
   switch (onoff)
   {
     case DEVICE_INIT:
-      PtrDeviceInit();
+	      PtrDeviceInit();
       map[0] = 0;
       map[1] = 1;
       map[2] = 2;
@@ -457,12 +461,10 @@ get_pixel_safe(char* data, int x, int y, int width, int height, int bpp)
     start = (y * width) + x / 8;
     shift = x % 8;
     c = (unsigned char)(data[start]);
-    /* todo, for now checking processor but is there a better way?
-       maybe LSBFirst */
-#if defined(__sparc__) || defined(__PPC__)
-    return (c & (0x80 >> shift)) != 0;
-#else
+#if (X_BYTE_ORDER == X_LITTLE_ENDIAN)
     return (g_reverse_byte[c] & (0x80 >> shift)) != 0;
+#else
+    return (c & (0x80 >> shift)) != 0;
 #endif
   }
   return 0;
@@ -615,420 +617,227 @@ PtrAddEvent(int buttonMask, int x, int y)
   g_old_button_mask = buttonMask;
 }
 
+
+/******************************************************************************/
+void
+check_keysa(void)
+{
+  xEvent ev;
+  unsigned long time;
+
+/*
+  ErrorF("tab special happened\n");
+  ErrorF("%d\n", g_ctrl_down);
+  ErrorF("%d\n", g_alt_down);
+  ErrorF("%d\n", g_shift_down);
+*/
+  time = GetTimeInMillis();
+  if (g_ctrl_down != 0)
+  {
+    memset(&ev, 0, sizeof(ev));
+    ev.u.u.type = KeyRelease;
+    ev.u.keyButtonPointer.time = time;
+    ev.u.u.detail = g_ctrl_down;
+    mieqEnqueue(&ev);
+    g_ctrl_down = 0;
+  }
+  if (g_alt_down != 0)
+  {
+    memset(&ev, 0, sizeof(ev));
+    ev.u.u.type = KeyRelease;
+    ev.u.keyButtonPointer.time = time;
+    ev.u.u.detail = g_alt_down;
+    mieqEnqueue(&ev);
+    g_alt_down = 0;
+  }
+  if (g_shift_down != 0)
+  {
+    memset(&ev, 0, sizeof(ev));
+    ev.u.u.type = KeyRelease;
+    ev.u.keyButtonPointer.time = time;
+    ev.u.u.detail = g_shift_down;
+    mieqEnqueue(&ev);
+    g_shift_down = 0;
+  }
+}
+
 /******************************************************************************/
 void
 KbdAddEvent(int down, int param1, int param2, int param3, int param4)
 {
   xEvent ev;
   unsigned long time;
-  int ch;
+  int rdp_scancode;
+  int x_scancode;
+  int is_ext;
+  int is_spe;
 
+/*
+  ErrorF("down %d param1 %d param2 %d param3 %d param4 %d\n", down, param1, param2, param3, param4);
+*/
+  memset(&ev, 0, sizeof(ev));
+  ev.u.u.type = down ? KeyPress : KeyRelease;
   time = GetTimeInMillis();
-  if (down)
-  {
-    ev.u.u.type = KeyPress;
-  }
-  else
-  {
-    ev.u.u.type = KeyRelease;
-  }
   ev.u.keyButtonPointer.time = time;
-  ch = 0;
-  switch (param3)
+  rdp_scancode = param3;
+  is_ext = param4 & 256; /* 0x100 */
+  is_spe = param4 & 512; /* 0x200 */
+  x_scancode = 0;
+  switch (rdp_scancode)
   {
-    case 1: /* esc */
-      ch = 67;
-      break;
-    case 2: /* 1 or ! */
-      ch = 18;
-      break;
-    case 3: /* 2 or @ */
-      ch = 19;
-      break;
-    case 4: /* 3 or # */
-      ch = 20;
-      break;
-    case 5: /* 4 or $ */
-      ch = 21;
-      break;
-    case 6: /* 5 or % */
-      ch = 22;
-      break;
-    case 7: /* 6 or ^ */
-      ch = 23;
-      break;
-    case 8: /* 7 or & */
-      ch = 24;
-      break;
-    case 9: /* 8 or * */
-      ch = 25;
-      break;
-    case 10: /* 9 or ( */
-      ch = 26;
-      break;
-    case 11: /* 0 or ) */
-      ch = 17;
-      break;
-    case 12: /* - or _ */
-      ch = 27;
-      break;
-    case 13: /* = or + */
-      ch = 28;
-      break;
-    case 14: /* backspace */
-      ch = 64;
-      break;
     case 15: /* tab */
-      ch = 66;
-      break;
-    case 16: /* q */
-      ch = 54;
-      break;
-    case 17: /* w */
-      ch = 60;
-      break;
-    case 18: /* e */
-      ch = 42;
-      break;
-    case 19: /* r */
-      ch = 55;
-      break;
-    case 20: /* t */
-      ch = 57;
-      break;
-    case 21: /* y */
-      ch = 62;
-      break;
-    case 22: /* u */
-      ch = 58;
-      break;
-    case 23: /* i */
-      ch = 46;
-      break;
-    case 24: /* o */
-      ch = 52;
-      break;
-    case 25: /* p */
-      ch = 53;
-      break;
-    case 26: /* [ or { */
-      ch = 29;
-      break;
-    case 27: /* ] or } */
-      ch = 30;
-      break;
-    case 28: /* enter */
-      ch = 65;
-      break;
-    case 29: /* left and right control */
-      if (param4 & 0x100) /* rdp ext flag */
+      if (!down && !g_tab_down)
       {
-        ch = 9;
+        check_keysa();
+        /* leave x_scancode 0 here, we don't want the tab key up */
       }
       else
       {
-        ch = 8;
+        x_scancode = 23;
       }
+      g_tab_down = down;
       break;
-    case 30: /* a */
-      /*ch = g_caps_lock ? 118 : 38;*/
-      /*ch = 118;*/
-      ch = 38;
+    case 28: /* Enter or Return */
+      x_scancode = is_ext ? 108 : 36;
       break;
-    case 31: /* s */
-      ch = 56;
-      break;
-    case 32: /* d */
-      ch = 41;
-      break;
-    case 33: /* f */
-      ch = 43;
-      break;
-    case 34: /* g */
-      ch = 44;
-      break;
-    case 35: /* h */
-      ch = 45;
-      break;
-    case 36: /* j */
-      ch = 47;
-      break;
-    case 37: /* k */
-      ch = 48;
-      break;
-    case 38: /* l */
-      ch = 49;
-      break;
-    case 39: /* : or ; */
-      ch = 31;
-      break;
-    case 40: /* ' or " */
-      ch = 32;
-      break;
-    case 41: /* ` or ~ */
-      ch = 33;
+    case 29: /* left or right ctrl */
+      /* this is to handle special case with pause key sending
+         control first */
+      if (is_spe)
+      {
+        if (down)
+        {
+          g_pause_spe = 1;
+        }
+        /* leave x_scancode 0 here, we don't want the control key down */
+      }
+      else
+      {
+        x_scancode = is_ext ? 109 : 37;
+        g_ctrl_down = down ? x_scancode : 0;
+      }
       break;
     case 42: /* left shift */
-      ch = 10;
+      x_scancode = 50;
+      g_shift_down = down ? x_scancode : 0;
       break;
-    case 43: /* \ or | */
-      ch = 37;
-      break;
-    case 44: /* z */
-      ch = 63;
-      break;
-    case 45: /* x */
-      ch = 61;
-      break;
-    case 46: /* c */
-      ch = 40;
-      break;
-    case 47: /* v */
-      ch = 59;
-      break;
-    case 48: /* b */
-      ch = 39;
-      break;
-    case 49: /* n */
-      ch = 51;
-      break;
-    case 50: /* m */
-      ch = 50;
-      break;
-    case 51: /* , or < */
-      ch = 34;
-      break;
-    case 52: /* . or > */
-      ch = 35;
-      break;
-    case 53: /* / or ? */
-      ch = 36;
+    case 53: /* / */
+      x_scancode = is_ext ? 112 : 61;
       break;
     case 54: /* right shift */
-      ch = 11;
+      x_scancode = 62;
+      g_shift_down = down ? x_scancode : 0;
       break;
-    case 55: /* * on keypad or print screen if ext */
-      if (param4 & 0x100) /* rdp ext flag */
+    case 55: /* * on KP or Print Screen */
+      x_scancode = is_ext ? 111 : 63;
+      break;
+    case 56: /* left or right alt */
+      x_scancode = is_ext ? 113 : 64;
+      g_alt_down = down ? x_scancode : 0;
+      break;
+    case 69: /* Pause or Num Lock */
+      if (g_pause_spe)
       {
-        ch = 90;
+        x_scancode = 110;
+        if (!down)
+        {
+          g_pause_spe = 0;
+        }
       }
       else
       {
-        ch = 89;
+        x_scancode = g_ctrl_down ? 110 : 77;
       }
       break;
-    case 56: /* left and right alt */
-      if (param4 & 0x100) /* rdp ext flag */
+    case 70: /* scroll lock */
+      x_scancode = 78;
+      if (!down)
       {
-        ch = 15; /* right alt */
-      }
-      else
-      {
-        ch = 14; /* left alt */
+        g_scroll_lock_down = !g_scroll_lock_down;
       }
       break;
-    case 57: /* space */
-      ch = 16;
+    case 71: /* 7 or Home */
+      x_scancode = is_ext ? 97 : 79;
       break;
-    case 58: /* caps lock */
-      ch = 91;
-      g_caps_lock = down;
+    case 72: /* 8 or Up */
+      x_scancode = is_ext ? 98 : 80;
       break;
-    case 59: /* F1 */
-      ch = 77;
+    case 73: /* 9 or PgUp */
+      x_scancode = is_ext ? 99 : 81;
       break;
-    case 60: /* F2 */
-      ch = 78;
+    case 75: /* 4 or Left */
+      x_scancode = is_ext ? 100 : 83;
       break;
-    case 61: /* F3 */
-      ch = 79;
+    case 77: /* 6 or Right */
+      x_scancode = is_ext ? 102 : 85;
       break;
-    case 62: /* F4 */
-      ch = 80;
+    case 79: /* 1 or End */
+      x_scancode = is_ext ? 103 : 87;
       break;
-    case 63: /* F5 */
-      ch = 81;
+    case 80: /* 2 or Down */
+      x_scancode = is_ext ? 104 : 88;
       break;
-    case 64: /* F6 */
-      ch = 82;
+    case 81: /* 3 or PgDn */
+      x_scancode = is_ext ? 105 : 89;
       break;
-    case 65: /* F7 */
-      ch = 83;
+    case 82: /* 0 or Insert */
+      x_scancode = is_ext ? 106 : 90;
       break;
-    case 66: /* F8 */
-      ch = 84;
+    case 83: /* . or Delete */
+      x_scancode = is_ext ? 107 : 91;
       break;
-    case 67: /* F9 */
-      ch = 85;
+    case 91: /* left win key */
+      x_scancode = 115;
       break;
-    case 68: /* F10 */
-      ch = 86;
+    case 92: /* right win key */
+      x_scancode = 116;
       break;
-    case 69: /* Num lock */
-      ch = 92;
+    case 93: /* menu key */
+      x_scancode = 117;
       break;
-    case 70: /* Scroll lock */
-      ch = 93;
-      break;
-    case 71: /* 7 or home */
-      if (param2 == 0xffff) /* ascii 7 */
-      {
-        ch = 95; /* keypad 7 */
-      }
-      else if (param4 & 0x100)
-      {
-        ch = 69; /* non keypad home */
-      }
-      else
-      {
-        ch = 94; /* keypad home */
-      }
-      break;
-    case 72: /* 8 or up arrow */
-      if (param2 == 0xffff) /* ascii 8 */
-      {
-        ch = 97; /* keypad 8 */
-      }
-      else if (param4 & 0x100)
-      {
-        ch = 73; /* non keypad up */
-      }
-      else
-      {
-        ch = 96; /* keypad up */
-      }
-      break;
-    case 73: /* 9 or page up */
-      if (param2 == 0xffff) /* ascii 9 */
-      {
-        ch = 99; /* keypad 9 */
-      }
-      else if (param4 & 0x100)
-      {
-        ch = 71; /* non keypad page up */
-      }
-      else
-      {
-        ch = 98; /* keypad page up */
-      }
-      break;
-    case 74: /* minus on keypad */
-      ch = 100;
-      break;
-    case 75: /* 4 or left arrow */
-      if (param2 == 0xffff) /* ascii 4 */
-      {
-        ch = 102; /* keypad 4 */
-      }
-      else if (param4 & 0x100)
-      {
-        ch = 75; /* non keypad left */
-      }
-      else
-      {
-        ch = 101; /* keypad left */
-      }
-      break;
-    case 76: /* 5 on keypad */
-      ch = 103;
-      break;
-    case 77: /* 6 or right arrow */
-      if (param2 == 0xffff) /* ascii 6 */
-      {
-        ch = 105; /* keypad 6 */
-      }
-      else if (param4 & 0x100)
-      {
-        ch = 76; /* non keypad right */
-      }
-      else
-      {
-        ch = 104; /* keypad right */
-      }
-      break;
-    case 78: /* plus on keypad */
-      ch = 106;
-      break;
-    case 79: /* 1 or end */
-      if (param2 == 0xffff) /* ascii 1 */
-      {
-        ch = 108; /* keypad 1 */
-      }
-      else if (param4 & 0x100)
-      {
-        ch = 70; /* non keypad end */
-      }
-      else
-      {
-        ch = 107; /* keypad end */
-      }
-      break;
-    case 80: /* 2 or down arrow */
-      if (param2 == 0xffff) /* ascii 2 */
-      {
-        ch = 110; /* keypad 2 */
-      }
-      else if (param4 & 0x100)
-      {
-        ch = 74; /* non keypad down arrow */
-      }
-      else
-      {
-        ch = 109; /* keypad down arrow */
-      }
-      break;
-    case 81: /* 3 or page down */
-      if (param2 == 0xffff) /* ascii 3 */
-      {
-        ch = 112; /* keypad 3 */
-      }
-      else if (param4 & 0x100)
-      {
-        ch = 72; /* non keypad page down */
-      }
-      else
-      {
-        ch = 111; /* keypad page down */
-      }
-      break;
-    case 82: /* 0 or insert */
-      if (param2 == 0xffff) /* ascii 0 */
-      {
-        ch = 114; /* keypad 0 */
-      }
-      else if (param4 & 0x100)
-      {
-        ch = 115; /* non keypad insert */
-      }
-      else
-      {
-        ch = 113; /* keypad insert */
-      }
-      break;
-    case 83: /* . or delete */
-      if (param2 == 0xffff) /* ascii . */
-      {
-        ch = 117; /* keypad . */
-      }
-      else if (param4 & 0x100)
-      {
-        ch = 68; /* non keypad delete */
-      }
-      else
-      {
-        ch = 116; /* keypad delete */
-      }
-      break;
-    case 87: /* F11 */
-      ch = 87;
-      break;
-    case 88: /* F12 */
-      ch = 88;
+    default:
+      x_scancode = rdp_scancode + MIN_KEY_CODE;
       break;
   }
-  if (ch > 0)
+  if (x_scancode > 0)
   {
-    ev.u.u.detail = ch;
+    ev.u.u.detail = x_scancode;
     mieqEnqueue(&ev);
+  }
+}
+
+/******************************************************************************/
+/* notes -
+     we should use defines or something for the keyc->state below
+     scroll lock doesn't seem to be a modifier in X
+*/
+void
+KbdSync(int param1)
+{
+  KeyClassPtr keyc;
+
+  if (g_kbdDevice == 0)
+  {
+    return;
+  }
+  keyc = g_kbdDevice->key;
+  if (keyc == 0)
+  {
+    return;
+  }
+  if ((!(keyc->state & 0x02)) != (!(param1 & 4))) /* caps lock */
+  {
+    KbdAddEvent(1, 58, 0, 58, 0);
+    KbdAddEvent(0, 58, 49152, 58, 49152);
+  }
+  if ((!(keyc->state & 0x10)) != (!(param1 & 2))) /* num lock */
+  {
+    KbdAddEvent(1, 69, 0, 69, 0);
+    KbdAddEvent(0, 69, 49152, 69, 49152);
+  }
+  if ((!(g_scroll_lock_down)) != (!(param1 & 1))) /* scroll lock */
+  {
+    KbdAddEvent(1, 70, 0, 70, 0);
+    KbdAddEvent(0, 70, 49152, 70, 49152);
   }
 }

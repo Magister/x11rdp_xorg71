@@ -216,7 +216,11 @@ g_malloc(int size, int zero)
 {
   char* rv;
 
+#ifdef _XSERVER64
+  rv = (char*)xalloc(size);
+#else
   rv = (char*)Xalloc(size);
+#endif
   if (zero)
   {
     if (rv != 0)
@@ -233,7 +237,11 @@ g_free(void* ptr)
 {
   if (ptr != 0)
   {
+#ifdef _XSERVER64
+    xfree(ptr);
+#else
     Xfree(ptr);
+#endif
   }
 }
 

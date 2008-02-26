@@ -23,14 +23,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/param.h>
+#include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include "X11/X.h"
+#include "X.h"
 #define NEED_EVENTS
-#include "X11/Xproto.h"
-#include "X11/Xos.h"
+#include "Xproto.h"
+#include "Xos.h"
 #include "scrnintstr.h"
 #include "servermd.h"
 #define PSZ 8
@@ -42,18 +45,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "mipointer.h"
 #include "dixstruct.h"
 #include "propertyst.h"
-#include <Xatom.h>
-#include <errno.h>
-#include <sys/param.h>
+#include "Xatom.h"
 #include "dix.h"
-#include <X11/keysym.h>
+#include "X11/keysym.h"
 #include "dixfontstr.h"
 #include "osdep.h"
 #include "fontstruct.h"
-#include <cursorstr.h>
+#include "cursorstr.h"
 #include "picturestr.h"
-#include <netinet/tcp.h>
 #include "XKBstr.h"
+#include "inputstr.h"
 
 /* test to see if this is xorg source or xfree86 */
 #ifdef XORGSERVER
@@ -71,7 +72,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Per-screen (framebuffer) structure.  There is only one of these, since we
    don't allow the X server to have multiple screens. */
-typedef struct
+typedef struct _rdpScreenInfo
 {
   int width;
   int paddedWidthInBytes;
@@ -199,7 +200,7 @@ rdpComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
              INT16 yDst, CARD16 width, CARD16 height);
 
 
-/* rdpkbdptr.c */
+/* rdpinput.c */
 int
 rdpKeybdProc(DeviceIntPtr pDevice, int onoff);
 int
@@ -220,6 +221,8 @@ void
 PtrAddEvent(int buttonMask, int x, int y);
 void
 KbdAddEvent(int down, int param1, int param2, int param3, int param4);
+void
+KbdSync(int param1);
 
 /* rdpup.c */
 int
@@ -255,12 +258,14 @@ rdpup_draw_line(short x1, short y1, short x2, short y2);
 void
 rdpup_send_area(int x, int y, int w, int h);
 
-#if defined(__sparc__) || defined(__PPC__)
-#define B_ENDIAN
-#elif __BYTE_ORDER == __LITTLE_ENDIAN
-#define L_ENDIAN
-#elif __BYTE_ORDER == __BIG_ENDIAN
-#define B_ENDIAN
+#if defined(X_BYTE_ORDER)
+#  if X_BYTE_ORDER == X_LITTLE_ENDIAN
+#    define L_ENDIAN
+#  else
+#    define B_ENDIAN
+#  endif
+#else
+#  error Unknown endianness in rdp.h
 #endif
 /* check if we need to align data */
 #if defined(__sparc__) || defined(__alpha__) || defined(__hppa__) || \
