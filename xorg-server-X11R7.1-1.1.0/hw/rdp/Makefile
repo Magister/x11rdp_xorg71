@@ -1,11 +1,15 @@
 
+#X11RDPBASE = /usr
+X11RDPBASE = /opt/X11rdp
+
+INCBASE = $(X11RDPBASE)/include
+LIBBASE = $(X11RDPBASE)/lib
+
 OBJS = rdpmain.o rdpdraw.o rdpinput.o rdpmisc.o rdpup.o miinitext.o fbcmap.o
 
 LIBS = ../../dbe/.libs/libdbe.a \
 	../../dix/.libs/libdix.a \
 	../../fb/.libs/libfb.a \
-	../../GL/glx/.libs/libglx.a \
-	../../GL/mesa/.libs/libGLcore.a \
 	../../mfb/.libs/libmfb.a \
 	../../mi/.libs/libmi.a \
 	../../os/.libs/libos.a \
@@ -16,15 +20,24 @@ LIBS = ../../dbe/.libs/libdbe.a \
 	../../XTrap/.libs/libxtrap.a \
 	../../Xext/.libs/libXext.a \
 	../../Xi/.libs/libXi.a \
+	../../GL/glx/.libs/libglx.a \
+	../../GL/mesa/.libs/libGLcore.a \
 	librdp.a \
 	-lfreetype -lz -lm -lXfont -lXau -lXdmcp
 
 CFLAGS = -O2 -fno-strength-reduce -ansi -pedantic \
-	-I../../include -I../../cfb -I../../mfb -I../../mi \
-	-I../../../fontsproto-X11R7.0-2.0.2 -I../../../xproto-X11R7.1-7.0.5 \
-	-I../../../kbproto-X11R7.0-1.0.2 \
-	-I/opt/X11rdp/include \
-	-I../../os -I../../render -I../xfree86/common -I../xfree86/os-support \
+	-I../../include \
+	-I../../cfb \
+	-I../../mfb \
+	-I../../mi \
+	-I$(INCBASE)/X11 \
+	-I$(INCBASE)/X11/fonts \
+	-I$(INCBASE)/X11/extensions \
+	-I$(INCBASE)/xorg \
+	-I../../os \
+	-I../../render \
+	-I../xfree86/common \
+	-I../xfree86/os-support \
 	-D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE -D_REENTRANT \
 	-DGLX_USE_MESA -DXRECORD -D_GNU_SOURCE -DXAPPGROUP \
 	-DXCSECURITY -DTOGCUP -DSINGLEDEPTH -DXFree86Server \
@@ -50,7 +63,7 @@ CFLAGS = -O2 -fno-strength-reduce -ansi -pedantic \
 # these are not needed I think
 # -Dlinux -D__i386__
 
-LDFLAGS = -L/opt/X11rdp/lib
+LDFLAGS = -L$(LIBBASE)
 
 all: rdp
 
