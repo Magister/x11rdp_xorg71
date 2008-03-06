@@ -49,7 +49,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "dix.h"
 #include "X11/keysym.h"
 #include "dixfontstr.h"
-#include "osdep.h"
 #include "fontstruct.h"
 #include "cursorstr.h"
 #include "picturestr.h"
@@ -104,7 +103,7 @@ typedef struct _rdpScreenInfo
 
 typedef rdpScreenInfo* rdpScreenInfoPtr;
 
-typedef struct
+typedef struct _rdpGCRec
 {
   GCFuncs* funcs;
   GCOps* ops;
