@@ -1,16 +1,39 @@
 #!/bin/sh
 
-SRCDIR=$PWD
+print_help()
+{
+  echo ""
+  echo "X11 build script"
+  echo "sh buildx.sh <path to build>"
+  echo "example sh buildx.sh /usr"
+  echo "example sh buildx.sh /usr/local"
+  echo "example sh buildx.sh /opt/X11rdp"
+  echo ""
+  return 0
+}
 
-PREFIXDIR=/opt/X11rdp
-PCFILEDIR=$PREFIXDIR/lib/pkgconfig
+if test $# -eq 0
+then
+  print_help
+  exit 0
+else
+  PREFIXDIR=$1
+fi
 
 if ! test -d $PREFIXDIR
 then
-  echo "error directory /opt/X11rdp doesn't exist"
-  exit 1;
+  echo "error directory $PREFIXDIR does not exist"
+  exit 1
 fi
 
+if ! test -w $PREFIXDIR
+then
+  echo "error directory $PREFIXDIR is not writable"
+  exit 0
+fi
+
+SRCDIR=$PWD
+PCFILEDIR=$PREFIXDIR/lib/pkgconfig
 export PKG_CONFIG_PATH=$PCFILEDIR
 
 # xf86dri
@@ -21,7 +44,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xf86dri"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -38,7 +61,7 @@ then
   if ! test $? -eq 0
   then
     echo "error glproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -55,7 +78,7 @@ then
   if ! test $? -eq 0
   then
     echo "error randrproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -72,7 +95,7 @@ then
   if ! test $? -eq 0
   then
     echo "error renderproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -89,7 +112,7 @@ then
   if ! test $? -eq 0
   then
     echo "error fixesproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -106,7 +129,7 @@ then
   if ! test $? -eq 0
   then
     echo "error damageproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -123,7 +146,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xcmiscproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -140,7 +163,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xextproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -157,7 +180,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -174,7 +197,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xtrans"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -191,7 +214,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xf86miscproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -208,7 +231,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xf86vidmodeproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -225,7 +248,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xf86bigfontproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -242,7 +265,7 @@ then
   if ! test $? -eq 0
   then
     echo "error scrnsaverproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -259,7 +282,7 @@ then
   if ! test $? -eq 0
   then
     echo "error bigreqsproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -276,7 +299,7 @@ then
   if ! test $? -eq 0
   then
     echo "error resourceproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -293,7 +316,7 @@ then
   if ! test $? -eq 0
   then
     echo "error fontsproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -310,7 +333,7 @@ then
   if ! test $? -eq 0
   then
     echo "error inputproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -327,7 +350,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xf86dgaproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -344,7 +367,7 @@ then
   if ! test $? -eq 0
   then
     echo "error videoproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -361,7 +384,7 @@ then
   if ! test $? -eq 0
   then
     echo "error compositeproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -378,7 +401,7 @@ then
   if ! test $? -eq 0
   then
     echo "error trapproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -395,7 +418,7 @@ then
   if ! test $? -eq 0
   then
     echo "error recordproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -412,7 +435,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xineramaproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -429,7 +452,7 @@ then
   if ! test $? -eq 0
   then
     echo "error ice"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -446,7 +469,7 @@ then
   if ! test $? -eq 0
   then
     echo "error sm"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -463,7 +486,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xau"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -480,7 +503,7 @@ then
   if ! test $? -eq 0
   then
     echo "error kbproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -497,7 +520,7 @@ then
   if ! test $? -eq 0
   then
     echo "error Xdmcp"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -514,7 +537,7 @@ then
   if ! test $? -eq 0
   then
     echo "error x11"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -531,7 +554,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xt"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -548,7 +571,7 @@ then
   if ! test $? -eq 0
   then
     echo "error evieext"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -565,7 +588,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xkbfile"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -582,7 +605,7 @@ then
   if ! test $? -eq 0
   then
     echo "error fontcacheproto"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -599,7 +622,7 @@ then
   if ! test $? -eq 0
   then
     echo "error fontenc"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -616,7 +639,7 @@ then
   if ! test $? -eq 0
   then
     echo "error freetype"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -633,13 +656,13 @@ then
   if ! test $? -eq 0
   then
     echo "error xfont"
-    exit 1;
+    exit 1
   fi
   make
   if ! test $? -eq 0
   then
     echo "error make xfont"
-    exit 1;
+    exit 1
   fi
   make install
   cd ..
@@ -655,7 +678,7 @@ then
   if ! test $? -eq 0
   then
     echo "error Xext"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -672,7 +695,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xmu"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -689,7 +712,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xkbui"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -706,7 +729,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xxf86misc"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -723,7 +746,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xxf86vm"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -740,7 +763,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xpm"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -757,7 +780,7 @@ then
   if ! test $? -eq 0
   then
     echo "error xaw7"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -774,7 +797,7 @@ then
   if ! test $? -eq 0
   then
     echo "error libdrm"
-    exit 1;
+    exit 1
   fi
   make
   make install
@@ -787,17 +810,17 @@ fi
 if ! test -f $PCFILEDIR/xorg-server.pc
 then
   cd xorg-server-X11R7.1-1.1.0
-  ./configure --prefix=$PREFIXDIR --enable-xglx --with-mesa-source=$SRCDIR/Mesa-6.5
+  ./configure --prefix=$PREFIXDIR --enable-xglx --with-mesa-source=$SRCDIR/Mesa-6.5 --disable-dmx
   if ! test $? -eq 0
   then
     echo "error xorg-server"
-    exit 1;
+    exit 1
   fi
   make
   if ! test $? -eq 0
   then
     echo "error make xorg-server"
-    exit 1;
+    exit 1
   fi
   make install
   cd ..
