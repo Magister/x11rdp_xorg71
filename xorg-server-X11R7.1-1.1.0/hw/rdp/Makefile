@@ -1,6 +1,5 @@
 
-#X11RDPBASE = /usr
-X11RDPBASE = /opt/X11rdp
+#X11RDPBASE is an environment variable that needs to be set
 
 INCBASE = $(X11RDPBASE)/include
 LIBBASE = $(X11RDPBASE)/lib
@@ -30,6 +29,7 @@ CFLAGS = -O2 -fno-strength-reduce -ansi -pedantic \
 	-I../../cfb \
 	-I../../mfb \
 	-I../../mi \
+	-I$(INCBASE) \
 	-I$(INCBASE)/X11 \
 	-I$(INCBASE)/X11/fonts \
 	-I$(INCBASE)/X11/extensions \
@@ -65,9 +65,9 @@ CFLAGS = -O2 -fno-strength-reduce -ansi -pedantic \
 
 LDFLAGS = -L$(LIBBASE)
 
-all: rdp
+all: X11rdp
 
-rdp: $(OBJS)
+X11rdp: $(OBJS)
 	$(AR) rvu librdp.a $(OBJS)
 	ranlib librdp.a
 	$(CC) $(LDFLAGS) -o X11rdp $(LIBS) $(LIBS)
