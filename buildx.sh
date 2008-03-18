@@ -828,4 +828,14 @@ else
   echo "skipping xorg-server"
 fi
 
+# X11rdp
+cd xorg-server-X11R7.1-1.1.0/hw/rdp
+export X11RDPBASE=$PREFIXDIR
+make
+if ! test $? -eq 0
+then
+  echo "error make X11rdp"
+  exit 1
+fi
+
 echo "all ok"
