@@ -37,16 +37,10 @@ static int g_cursor_y = 0;
 static OsTimerPtr g_timer = 0;
 static int g_scheduled = 0;
 static int g_count = 0;
-
 extern ScreenPtr g_pScreen; /* from rdpmain.c */
 extern int g_Bpp; /* from rdpmain.c */
 extern int g_Bpp_mask; /* from rdpmain.c */
-extern rdpScreenInfo g_rdpScreen; /* from rdpmain.c */
-
-extern char* display;
-
-static void
-rdpScheduleDeferredUpdate(void);
+extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
 
 /*
 0 GXclear,        0
@@ -67,7 +61,7 @@ e GXor,          DPo
 f GXset          1
 */
 
-static int rdp_opcodes[16] =
+static int g_rdp_opcodes[16] =
 {
   0x00, /* GXclear        0x0 0 */
   0x88, /* GXand          0x1 src AND dst */
@@ -86,54 +80,6 @@ static int rdp_opcodes[16] =
   0x77, /* GXnand         0xe NOT src OR NOT dst */
   0xff  /* GXset          0xf 1 */
 };
-
-/******************************************************************************/
-/* returns error */
-static int
-rdpup_recv(char* data, int len)
-{
-  int rcvd;
-
-  if (g_sck_closed)
-  {
-    return 1;
-  }
-  while (len > 0)
-  {
-    rcvd = g_tcp_recv(g_sck, data, len, 0);
-    if (rcvd == -1)
-    {
-      if (g_tcp_last_error_would_block(g_sck))
-      {
-        g_sleep(1);
-      }
-      else
-      {
-        RemoveEnabledDevice(g_sck);
-        g_connected = 0;
-        g_tcp_close(g_sck);
-        g_sck = 0;
-        g_sck_closed = 1;
-        return 1;
-      }
-    }
-    else if (rcvd == 0)
-    {
-      RemoveEnabledDevice(g_sck);
-      g_connected = 0;
-      g_tcp_close(g_sck);
-      g_sck = 0;
-      g_sck_closed = 1;
-      return 1;
-    }
-    else
-    {
-      data += rcvd;
-      len -= rcvd;
-    }
-  }
-  return 0;
-}
 
 /*****************************************************************************/
 /* returns error */
@@ -210,6 +156,83 @@ rdpup_send_msg(struct stream* s)
     ErrorF("error in rdpup_send_msg\n");
   }
   return rv;
+}
+
+/******************************************************************************/
+static CARD32
+rdpDeferredUpdateCallback(OsTimerPtr timer, CARD32 now, pointer arg)
+{
+  if (g_connected && g_begin)
+  {
+    DEBUG_OUT_UP(("end %d\n", g_count));
+    out_uint16_le(g_out_s, 2);
+    g_count++;
+    s_mark_end(g_out_s);
+    rdpup_send_msg(g_out_s);
+  }
+  g_count = 0;
+  g_begin = 0;
+  g_scheduled = 0;
+  return 0;
+}
+
+/******************************************************************************/
+static void
+rdpScheduleDeferredUpdate(void)
+{
+  if (!g_scheduled)
+  {
+    g_scheduled = 1;
+    g_timer = TimerSet(g_timer, 0, 40, rdpDeferredUpdateCallback, 0);
+  }
+}
+
+/******************************************************************************/
+/* returns error */
+static int
+rdpup_recv(char* data, int len)
+{
+  int rcvd;
+
+  if (g_sck_closed)
+  {
+    return 1;
+  }
+  while (len > 0)
+  {
+    rcvd = g_tcp_recv(g_sck, data, len, 0);
+    if (rcvd == -1)
+    {
+      if (g_tcp_last_error_would_block(g_sck))
+      {
+        g_sleep(1);
+      }
+      else
+      {
+        RemoveEnabledDevice(g_sck);
+        g_connected = 0;
+        g_tcp_close(g_sck);
+        g_sck = 0;
+        g_sck_closed = 1;
+        return 1;
+      }
+    }
+    else if (rcvd == 0)
+    {
+      RemoveEnabledDevice(g_sck);
+      g_connected = 0;
+      g_tcp_close(g_sck);
+      g_sck = 0;
+      g_sck_closed = 1;
+      return 1;
+    }
+    else
+    {
+      data += rcvd;
+      len -= rcvd;
+    }
+  }
+  return 0;
 }
 
 /******************************************************************************/
@@ -574,7 +597,7 @@ rdpup_set_opcode(int opcode)
     rdpup_pre_check(4);
     out_uint16_le(g_out_s, 14);
     g_count++;
-    out_uint16_le(g_out_s, rdp_opcodes[opcode & 0xf]);
+    out_uint16_le(g_out_s, g_rdp_opcodes[opcode & 0xf]);
   }
   return 0;
 }
@@ -781,34 +804,5 @@ rdpup_send_area(int x, int y, int w, int h)
       }
       ly += 64;
     }
-  }
-}
-
-/******************************************************************************/
-static CARD32
-rdpDeferredUpdateCallback(OsTimerPtr timer, CARD32 now, pointer arg)
-{
-  if (g_connected && g_begin)
-  {
-    DEBUG_OUT_UP(("end %d\n", g_count));
-    out_uint16_le(g_out_s, 2);
-    g_count++;
-    s_mark_end(g_out_s);
-    rdpup_send_msg(g_out_s);
-  }
-  g_count = 0;
-  g_begin = 0;
-  g_scheduled = 0;
-  return 0;
-}
-
-/******************************************************************************/
-static void
-rdpScheduleDeferredUpdate(void)
-{
-  if (!g_scheduled)
-  {
-    g_scheduled = 1;
-    g_timer = TimerSet(g_timer, 0, 40, rdpDeferredUpdateCallback, 0);
   }
 }

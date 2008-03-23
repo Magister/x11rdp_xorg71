@@ -71,7 +71,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Per-screen (framebuffer) structure.  There is only one of these, since we
    don't allow the X server to have multiple screens. */
-typedef struct _rdpScreenInfo
+struct _rdpScreenInfoRec
 {
   int width;
   int paddedWidthInBytes;
@@ -96,19 +96,16 @@ typedef struct _rdpScreenInfo
   CompositeProcPtr Composite;
   /* Backing store procedures */
   RestoreAreasProcPtr RestoreAreas;
+};
+typedef struct _rdpScreenInfoRec rdpScreenInfoRec;
+typedef rdpScreenInfoRec* rdpScreenInfoPtr;
 
-  /*InstallColormapProcPtr InstallColormap;*/
-
-} rdpScreenInfo;
-
-typedef rdpScreenInfo* rdpScreenInfoPtr;
-
-typedef struct _rdpGCRec
+struct _rdpGCRec
 {
   GCFuncs* funcs;
   GCOps* ops;
-} rdpGCRec;
-
+};
+typedef struct _rdpGCRec rdpGCRec;
 typedef rdpGCRec* rdpGCPtr;
 
 /* rdpmisc.c */

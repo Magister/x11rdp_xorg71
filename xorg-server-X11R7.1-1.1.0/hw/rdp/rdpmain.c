@@ -24,27 +24,18 @@ Sets up the  functions
 
 #include "rdp.h"
 
-rdpScreenInfo g_rdpScreen; /* the one screen */
+rdpScreenInfoRec g_rdpScreen; /* the one screen */
 ScreenPtr g_pScreen = 0;
 int g_rdpGCIndex = -1;
-int g_firstTime = 1;
-
 /* set all these at once, use function set_bpp */
 /* only allow 8 and 16 bpp for not, adding 32 later */
 int g_bpp = 16;
 int g_Bpp = 2;
 int g_Bpp_mask = 0xffff;
+static int g_firstTime = 1;
 static int g_redBits = 5;
 static int g_greenBits = 6;
 static int g_blueBits = 5;
-
-extern int monitorResolution;
-extern int defaultColorVisualClass;
-extern char* display;
-
-/*static HWEventQueueType alwaysCheckForInput[2] = { 0, 1 };
-static HWEventQueueType* mieqCheckForInput[2];*/
-
 static int g_initOutputCalled = 0;
 
 /******************************************************************************/

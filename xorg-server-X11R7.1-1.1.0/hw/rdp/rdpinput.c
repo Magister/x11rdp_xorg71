@@ -48,9 +48,6 @@ static int g_tab_down = 0;
 /* this is toggled every time num lock key is released, not like the
    above *_down vars */
 static int g_scroll_lock_down = 0;
-extern int g_Bpp; /* from rdpmain.c */
-extern ScreenPtr g_pScreen; /* from rdpmain.c */
-extern rdpScreenInfo rdpScreen; /* from rdpmain.c */
 
 #define MIN_KEY_CODE 8
 #define MAX_KEY_CODE 255
@@ -73,7 +70,7 @@ extern rdpScreenInfo rdpScreen; /* from rdpmain.c */
 /* num lock */
 #define NUM_LOCK_KEY_CODE 77
 
-#define N_PREDEFINED_KEYS (sizeof(kbdMap) / (sizeof(KeySym) * GLYPHS_PER_KEY))
+#define N_PREDEFINED_KEYS (sizeof(g_kbdMap) / (sizeof(KeySym) * GLYPHS_PER_KEY))
 
 /* Copied from Xvnc/lib/font/util/utilbitmap.c */
 static unsigned char g_reverse_byte[0x100] =
@@ -112,7 +109,7 @@ static unsigned char g_reverse_byte[0x100] =
   0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
 };
 
-static KeySym kbdMap[] =
+static KeySym g_kbdMap[] =
 {
   NoSymbol,        NoSymbol,        /* 8 */
   XK_Escape,       NoSymbol,        /* 9 */
@@ -275,7 +272,7 @@ KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8* pModMap)
   }
   for (i = 0; i < N_PREDEFINED_KEYS * GLYPHS_PER_KEY; i++)
   {
-    pKeySyms->map[i] = kbdMap[i];
+    pKeySyms->map[i] = g_kbdMap[i];
   }
 }
 

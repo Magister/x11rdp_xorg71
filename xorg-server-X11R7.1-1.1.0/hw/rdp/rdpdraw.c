@@ -62,7 +62,7 @@ char atext[256];
 }
 #endif
 
-extern rdpScreenInfo g_rdpScreen; /* from rdpmain.c */
+extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
 extern int g_rdpGCIndex; /* from rdpmain.c */
 extern int g_Bpp; /* from rdpmain.c */
 extern ScreenPtr g_pScreen; /* from rdpmain.c */
