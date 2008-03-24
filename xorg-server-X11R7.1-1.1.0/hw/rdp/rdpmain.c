@@ -37,6 +37,34 @@ static int g_redBits = 5;
 static int g_greenBits = 6;
 static int g_blueBits = 5;
 static int g_initOutputCalled = 0;
+/* Common pixmap formats */
+static PixmapFormatRec g_formats[MAXFORMATS] =
+{
+  { 1, 1, BITMAP_SCANLINE_PAD },
+  { 4, 8, BITMAP_SCANLINE_PAD },
+  { 8, 8, BITMAP_SCANLINE_PAD },
+  { 15, 16, BITMAP_SCANLINE_PAD },
+  { 16, 16, BITMAP_SCANLINE_PAD },
+  { 24, 32, BITMAP_SCANLINE_PAD },
+  { 32, 32, BITMAP_SCANLINE_PAD },
+};
+static int g_numFormats = 7;
+static miPointerSpriteFuncRec g_rdpSpritePointerFuncs =
+{
+  /* these are in rdpinput.c */
+  rdpSpriteRealizeCursor,
+  rdpSpriteUnrealizeCursor,
+  rdpSpriteSetCursor,
+  rdpSpriteMoveCursor,
+};
+static miPointerScreenFuncRec g_rdpPointerCursorFuncs =
+{
+  /* these are in rdpinput.c */
+  rdpCursorOffScreen,
+  rdpCrossScreen,
+  miPointerWarpCursor /* don't need to set last 2 funcs
+                         EnqueueEvent and NewEventScreen */
+};
 
 /******************************************************************************/
 /* returns error, zero is good */
@@ -77,26 +105,6 @@ set_bpp(int bpp)
   }
   return rv;
 }
-
-/******************************************************************************/
-/* these are in rdpkbptr.c */
-static miPointerSpriteFuncRec rdpSpritePointerFuncs =
-{
-  rdpSpriteRealizeCursor,
-  rdpSpriteUnrealizeCursor,
-  rdpSpriteSetCursor,
-  rdpSpriteMoveCursor,
-};
-
-/******************************************************************************/
-/* these are in rdpkbptr.c */
-static miPointerScreenFuncRec rdpPointerCursorFuncs =
-{
-  rdpCursorOffScreen,
-  rdpCrossScreen,
-  miPointerWarpCursor /* don't need to set last 2 funcs
-                         EnqueueEvent and NewEventScreen */
-};
 
 /******************************************************************************/
 static void
@@ -273,8 +281,8 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
   /*pScreen->UninstallColormap = rdpUninstallColormap;*/
   /*pScreen->ListInstalledColormaps = rdpListInstalledColormaps;*/
   /*pScreen->StoreColors = rdpStoreColors;*/
-  miPointerInitialize(pScreen, &rdpSpritePointerFuncs,
-                      &rdpPointerCursorFuncs, 1);
+  miPointerInitialize(pScreen, &g_rdpSpritePointerFuncs,
+                      &g_rdpPointerCursorFuncs, 1);
   vis_found = 0;
   vis = g_pScreen->visuals + (g_pScreen->numVisuals - 1);
   while (vis >= pScreen->visuals)
@@ -400,19 +408,6 @@ XkbDDXTerminateServer(DeviceIntPtr dev, KeyCode key, XkbAction* act)
   return 0;
 }
 
-/* Common pixmap formats */
-static PixmapFormatRec formats[MAXFORMATS] =
-{
-  { 1, 1, BITMAP_SCANLINE_PAD },
-  { 4, 8, BITMAP_SCANLINE_PAD },
-  { 8, 8, BITMAP_SCANLINE_PAD },
-  { 15, 16, BITMAP_SCANLINE_PAD },
-  { 16, 16, BITMAP_SCANLINE_PAD },
-  { 24, 32, BITMAP_SCANLINE_PAD },
-  { 32, 32, BITMAP_SCANLINE_PAD },
-};
-static int numFormats = 7;
-
 /******************************************************************************/
 /* InitOutput is called every time the server resets.  It should call
    AddScreen for each screen (but we only ever have one), and in turn this
@@ -428,10 +423,10 @@ InitOutput(ScreenInfo* screenInfo, int argc, char** argv)
   screenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
   screenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
   screenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
-  screenInfo->numPixmapFormats = numFormats;
-  for (i = 0; i < numFormats; i++)
+  screenInfo->numPixmapFormats = g_numFormats;
+  for (i = 0; i < g_numFormats; i++)
   {
-    screenInfo->formats[i] = formats[i];
+    screenInfo->formats[i] = g_formats[i];
   }
   g_rdpGCIndex = AllocateGCPrivateIndex();
   if (g_rdpGCIndex < 0)
@@ -461,13 +456,9 @@ InitInput(int argc, char** argv)
   p = AddInputDevice(rdpMouseProc, 1);
   RegisterKeyboardDevice(k);
   RegisterPointerDevice(p);
+  /* screenInfo must be globally defined */
   miRegisterPointerDevice(screenInfo.screens[0], p);
   mieqInit(k, p);
-/*
-  mieqCheckForInput[0] = checkForInput[0];
-  mieqCheckForInput[1] = checkForInput[1];
-  SetInputCheck(&alwaysCheckForInput[0], &alwaysCheckForInput[1]);
-*/
 }
 
 /******************************************************************************/
