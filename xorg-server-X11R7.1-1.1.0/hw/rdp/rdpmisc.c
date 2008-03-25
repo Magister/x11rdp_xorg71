@@ -217,7 +217,8 @@ g_malloc(int size, int zero)
   char* rv;
 
 #ifdef _XSERVER64
-  rv = (char*)xalloc(size);
+  /* I thought xalloc whould work here but I guess not, why, todo */
+  rv = (char*)malloc(size);
 #else
   rv = (char*)Xalloc(size);
 #endif
@@ -238,7 +239,8 @@ g_free(void* ptr)
   if (ptr != 0)
   {
 #ifdef _XSERVER64
-    xfree(ptr);
+    /* I thought xfree whould work here but I guess not, why, todo */
+    free(ptr);
 #else
     Xfree(ptr);
 #endif
