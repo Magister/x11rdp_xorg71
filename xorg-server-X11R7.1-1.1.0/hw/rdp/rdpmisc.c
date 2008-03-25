@@ -184,7 +184,7 @@ g_tcp_last_error_would_block(int sck)
 #if defined(_WIN32)
   return WSAGetLastError() == WSAEWOULDBLOCK;
 #else
-  return errno == EWOULDBLOCK;
+  return (errno == EWOULDBLOCK) || (errno == EINPROGRESS);
 #endif
 }
 
@@ -425,12 +425,14 @@ PrinterInitOutput(ScreenInfo* pScreenInfo, int argc, char** argv)
 }
 
 /*****************************************************************************/
-void PrinterUseMsg(void)
+void
+PrinterUseMsg(void)
 {
 }
 
 /*****************************************************************************/
-void PrinterInitGlobals(void)
+void
+PrinterInitGlobals(void)
 {
 }
 
@@ -439,4 +441,3 @@ void
 FontCacheExtensionInit(INITARGS)
 {
 }
-

@@ -143,7 +143,7 @@ rdpup_send_msg(struct stream* s)
     len = s->end - s->data;
     if (len > s->size)
     {
-      ErrorF("overrun error len %d count %d\n", len, g_count);
+      rdpLog("overrun error len %d count %d\n", len, g_count);
     }
     s_pop_layer(s, iso_hdr);
     out_uint16_le(s, 1);
@@ -153,7 +153,7 @@ rdpup_send_msg(struct stream* s)
   }
   if (rv != 0)
   {
-    ErrorF("error in rdpup_send_msg\n");
+    rdpLog("error in rdpup_send_msg\n");
   }
   return rv;
 }
@@ -259,7 +259,7 @@ rdpup_recv_msg(struct stream* s)
   }
   if (rv != 0)
   {
-    ErrorF("error in rdpup_recv_msg\n");
+    rdpLog("error in rdpup_recv_msg\n");
   }
   return rv;
 }
@@ -285,8 +285,6 @@ rdpup_process_msg(struct stream* s)
     in_uint32_le(s, param4);
     DEBUG_OUT_UP(("rdpup_process_msg - msg %d param1 %d param2 %d param3 %d \
 param4 %d\n", msg, param1, param2, param3, param4));
-    /*ErrorF("rdpup_process_msg - msg %d param1 %d param2 %d param3 %d \
-param4 %d\n", msg, param1, param2, param3, param4);*/
     switch (msg)
     {
       case 15: /* key down */
@@ -351,7 +349,7 @@ param4 %d\n", msg, param1, param2, param3, param4);*/
   }
   else
   {
-    ErrorF("unknown message type in rdpup_process_msg\n");
+    rdpLog("unknown message type in rdpup_process_msg\n");
   }
   return 0;
 }
@@ -419,7 +417,7 @@ rdpup_check(void)
     }
     else
     {
-      ErrorF("rejecting connection, already got a connection\n");
+      rdpLog("rejecting connection, already got a connection\n");
       g_sleep(10);
       g_tcp_close(g_tcp_accept(g_listen_sck));
     }
@@ -475,7 +473,6 @@ rdpup_pre_check(int in_size)
   }
   if ((g_out_s->p - g_out_s->data) > (g_out_s->size - (in_size + 20)))
   {
-    /*ErrorF("%d %d\n", in_size, g_out_s->size);*/
     s_mark_end(g_out_s);
     rdpup_send_msg(g_out_s);
     g_count = 0;
@@ -760,7 +757,7 @@ rdpup_send_area(int x, int y, int w, int h)
   {
     h = g_rdpScreen.height - y;
   }
-  /*ErrorF("%d\n", w * h);*/
+  DEBUG_OUT_UP(("%d\n", w * h));
   if (g_connected && g_begin)
   {
     DEBUG_OUT_UP(("  rdpup_send_area\n"));
@@ -775,7 +772,7 @@ rdpup_send_area(int x, int y, int w, int h)
         single_color = get_single_color(lx, ly, lw, lh);
         if (single_color != -1)
         {
-          /*ErrorF("%d sending single color\n", g_count);*/
+          DEBUG_OUT_UP(("%d sending single color\n", g_count));
           rdpup_set_fgcolor(single_color);
           rdpup_fill_rect(lx, ly, lw, lh);
         }

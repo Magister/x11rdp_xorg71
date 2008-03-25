@@ -69,6 +69,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #  endif
 #endif
 
+#define X11RDPVER "0.5.0"
+
 /* Per-screen (framebuffer) structure.  There is only one of these, since we
    don't allow the X server to have multiple screens. */
 struct _rdpScreenInfoRec

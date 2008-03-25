@@ -155,7 +155,19 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
   g_rdpScreen.paddedWidthInBytes = PixmapBytePad(g_rdpScreen.width,
                                                  g_rdpScreen.depth);
   g_rdpScreen.bitsPerPixel = rdpBitsPerPixel(g_rdpScreen.depth);
-  ErrorF("screen width %d height %d depth %d bpp %d\n", g_rdpScreen.width,
+  ErrorF("\n");
+  ErrorF("X11rdp, an X server for xrdp\n");
+  ErrorF("Version %s\n", X11RDPVER);
+  ErrorF("Copyright (C) 2005-2008 Jay Sorg\n");
+  ErrorF("See http://xrdp.sf.net for information on xrdp.\n");
+#if defined(XORG_VERSION_CURRENT) && defined (XVENDORNAME)
+  ErrorF("Underlying X server release %d, %s\n",
+         XORG_VERSION_CURRENT, XVENDORNAME);
+#endif
+#if defined(XORG_RELEASE)
+  ErrorF("Xorg %s\n", XORG_RELEASE);
+#endif
+  ErrorF("Screen width %d height %d depth %d bpp %d\n", g_rdpScreen.width,
          g_rdpScreen.height, g_rdpScreen.depth, g_rdpScreen.bitsPerPixel);
   ErrorF("dpix %d dpiy %d\n", dpix, dpiy);
   if (g_rdpScreen.pfbMemory == 0)
@@ -252,13 +264,8 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
   {
     g_rdpScreen.Composite = ps->Composite;
   }
-
-  /* testing something here */
-  /*rdpScreen.InstallColormap = pScreen->InstallColormap;*/
-
   pScreen->blackPixel = g_rdpScreen.blackPixel;
   pScreen->whitePixel = g_rdpScreen.whitePixel;
-
   /* Random screen procedures */
   pScreen->CloseScreen = rdpCloseScreen;
   pScreen->WakeupHandler = rdpWakeupHandler;
@@ -276,11 +283,6 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
   pScreen->ClearToBackground = rdpClearToBackground;
   /* Backing store procedures */
   pScreen->RestoreAreas = rdpRestoreAreas;
-  /* Colormap procedures */
-  /*pScreen->InstallColormap = rdpInstallColormap;*/
-  /*pScreen->UninstallColormap = rdpUninstallColormap;*/
-  /*pScreen->ListInstalledColormaps = rdpListInstalledColormaps;*/
-  /*pScreen->StoreColors = rdpStoreColors;*/
   miPointerInitialize(pScreen, &g_rdpSpritePointerFuncs,
                       &g_rdpPointerCursorFuncs, 1);
   vis_found = 0;
@@ -298,13 +300,6 @@ rdpScreenInit(int index, ScreenPtr pScreen, int argc, char** argv)
     rdpLog("rdpScreenInit: couldn't find root visual\n");
     exit(1);
   }
-
-  /*vis->offsetBlue = 0;*/
-  /*vis->blueMask = (1 << blueBits) - 1;*/
-  /*vis->offsetGreen = blueBits;*/
-  /*vis->greenMask = ((1 << greenBits) - 1) << vis->offsetGreen;*/
-  /*vis->offsetRed = vis->offsetGreen + greenBits;*/
-  /*vis->redMask = ((1 << redBits) - 1) << vis->offsetRed;*/
   if (g_rdpScreen.bitsPerPixel == 1)
   {
     ret = mfbCreateDefColormap(pScreen);
@@ -338,12 +333,10 @@ ddxProcessArgument(int argc, char** argv, int i)
     g_rdpScreen.height = 600;
     g_rdpScreen.depth = 8;
     set_bpp(8);
-    /*rdpScreen.whitePixel = 0xffff;*/
     g_rdpScreen.blackPixel = 1;
-    /*rdpScreen.blackPixel = 0xffff;*/
     g_firstTime = 0;
   }
-  if (strcmp (argv[i], "-geometry") == 0)
+  if (strcmp(argv[i], "-geometry") == 0)
   {
     if (i + 1 >= argc)
     {

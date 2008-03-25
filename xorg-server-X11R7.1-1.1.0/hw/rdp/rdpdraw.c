@@ -29,39 +29,6 @@ Xserver drawing ops and funcs
 /*#define DEBUG_OUT_FUNCS(arg) ErrorF arg*/
 /*#define DEBUG_OUT_OPS(arg) ErrorF arg*/
 
-#if 0
-int atemp = 0;
-char atext[256];
-
-#define DEBUG_OUT_OPS(arg) \
-{ \
-  if (atemp == 0) \
-  { \
-    g_file_delete("/home/jj/atemp.log"); \
-    atemp = g_file_open("/home/jj/atemp.log"); \
-    g_set_file_rights("/home/jj/atemp.log", 1, 1); \
-  } \
-  g_sprintf(atext, arg ); \
-  g_file_write(atemp, atext, g_strlen(atext)); \
-}
-#endif
-
-#if 0
-int atemp = 0;
-char atext[256];
-#define DEBUG_OUT_OPS1(arg) \
-{ \
-  if (atemp == 0) \
-  { \
-    g_file_delete("/home/jj/atemp.log"); \
-    atemp = g_file_open("/home/jj/atemp.log"); \
-    g_set_file_rights("/home/jj/atemp.log", 1, 1); \
-  } \
-  g_sprintf arg ; \
-  g_file_write(atemp, atext, g_strlen(atext)); \
-}
-#endif
-
 extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
 extern int g_rdpGCIndex; /* from rdpmain.c */
 extern int g_Bpp; /* from rdpmain.c */
@@ -127,7 +94,7 @@ rdp_get_clip(RegionPtr pRegion, DrawablePtr pDrawable, GCPtr pGC)
             miIntersect(pRegion, pRegion, temp);
             break;
           default:
-            ErrorF("unimp clip type %d\n", pGC->clientClipType);
+            rdpLog("unimp clip type %d\n", pGC->clientClipType);
             break;
         }
         if (rv == 2) /* check if the clip is the entire screen */
@@ -1810,13 +1777,13 @@ rdpCreateGC(GCPtr pGC)
     }
     else
     {
-      ErrorF("error in rdpCreateGC\n");
+      rdpLog("error in rdpCreateGC, CreateGC failed\n");
     }
     g_pScreen->CreateGC = rdpCreateGC;
   }
   else
   {
-    ErrorF("error in rdpCreateGC\n");
+    rdpLog("error in rdpCreateGC, g_rdpGCIndex is -1\n");
   }
   return rv;
 }

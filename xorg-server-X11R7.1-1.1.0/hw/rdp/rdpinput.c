@@ -38,6 +38,9 @@ keyboard and mouse stuff
 
 #include "rdp.h"
 
+#define DEBUG_OUT_INPUT(arg)
+/*#define DEBUG_OUT_INPUT(arg) ErrorF arg*/
+
 static DeviceIntPtr g_kbdDevice = 0;
 static int g_old_button_mask = 0;
 static int g_pause_spe = 0;
@@ -70,7 +73,8 @@ static int g_scroll_lock_down = 0;
 /* num lock */
 #define NUM_LOCK_KEY_CODE 77
 
-#define N_PREDEFINED_KEYS (sizeof(g_kbdMap) / (sizeof(KeySym) * GLYPHS_PER_KEY))
+#define N_PREDEFINED_KEYS \
+  (sizeof(g_kbdMap) / (sizeof(KeySym) * GLYPHS_PER_KEY))
 
 /* Copied from Xvnc/lib/font/util/utilbitmap.c */
 static unsigned char g_reverse_byte[0x100] =
@@ -231,7 +235,7 @@ static KeySym g_kbdMap[] =
 static void
 rdpSendBell(void)
 {
-  ErrorF("hi rdpSendBell\n");
+  DEBUG_OUT_INPUT(("rdpSendBell\n"));
 }
 
 /******************************************************************************/
@@ -240,7 +244,7 @@ KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8* pModMap)
 {
   int i;
 
-  ErrorF("hi KbdDeviceInit\n");
+  DEBUG_OUT_INPUT(("KbdDeviceInit\n"));
   g_kbdDevice = pDevice;
   for (i = 0; i < MAP_LENGTH; i++)
   {
@@ -259,8 +263,8 @@ KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8* pModMap)
   pKeySyms->minKeyCode = MIN_KEY_CODE;
   pKeySyms->maxKeyCode = MAX_KEY_CODE;
   pKeySyms->mapWidth = GLYPHS_PER_KEY;
-  pKeySyms->map = (KeySym*)g_malloc(sizeof(KeySym) * MAP_LENGTH *
-                                    GLYPHS_PER_KEY, 1);
+  i = sizeof(KeySym) * MAP_LENGTH * GLYPHS_PER_KEY;
+  pKeySyms->map = (KeySym*)g_malloc(i, 1);
   if (pKeySyms->map == 0)
   {
     rdpLog("KbdDeviceInit g_malloc failed\n");
@@ -280,16 +284,14 @@ KbdDeviceInit(DeviceIntPtr pDevice, KeySymsPtr pKeySyms, CARD8* pModMap)
 void
 KbdDeviceOn(void)
 {
-  ErrorF("hi KbdDeviceOn\n");
-  /*usleep(1000000);*/
-  /*ErrorF("bye KbdDeviceOn\n");*/
+  DEBUG_OUT_INPUT(("KbdDeviceOn\n"));
 }
 
 /******************************************************************************/
 void
 KbdDeviceOff(void)
 {
-  ErrorF("hi KbdDeviceOff\n");
+  DEBUG_OUT_INPUT(("KbdDeviceOff\n"));
 }
 
 /******************************************************************************/
@@ -300,7 +302,7 @@ rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
   CARD8 modMap[MAP_LENGTH];
   DevicePtr pDev;
 
-  ErrorF("hi rdpKeybdProc\n");
+  DEBUG_OUT_INPUT(("rdpKeybdProc\n"));
   pDev = (DevicePtr)pDevice;
   switch (onoff)
   {
@@ -332,28 +334,28 @@ rdpKeybdProc(DeviceIntPtr pDevice, int onoff)
 void
 PtrDeviceControl(DeviceIntPtr dev, PtrCtrl* ctrl)
 {
-  ErrorF("hi PtrDeviceControl\n");
+  DEBUG_OUT_INPUT(("PtrDeviceControl\n"));
 }
 
 /******************************************************************************/
 void
 PtrDeviceInit(void)
 {
-  ErrorF("hi PtrDeviceInit\n");
+  DEBUG_OUT_INPUT(("PtrDeviceInit\n"));
 }
 
 /******************************************************************************/
 void
 PtrDeviceOn(DeviceIntPtr pDev)
 {
-  ErrorF("hi PtrDeviceOn\n");
+  DEBUG_OUT_INPUT(("PtrDeviceOn\n"));
 }
 
 /******************************************************************************/
 void
 PtrDeviceOff(void)
 {
-  ErrorF("hi PtrDeviceOff\n");
+  DEBUG_OUT_INPUT(("PtrDeviceOff\n"));
 }
 
 /******************************************************************************/
@@ -363,7 +365,7 @@ rdpMouseProc(DeviceIntPtr pDevice, int onoff)
   BYTE map[6];
   DevicePtr pDev;
 
-  ErrorF("hi rdpMouseProc\n");
+  DEBUG_OUT_INPUT(("rdpMouseProc\n"));
   pDev = (DevicePtr)pDevice;
   switch (onoff)
   {
@@ -401,7 +403,7 @@ rdpMouseProc(DeviceIntPtr pDevice, int onoff)
 Bool
 rdpCursorOffScreen(ScreenPtr* ppScreen, int* x, int* y)
 {
-  /*ErrorF("hi rdpCursorOffScreen\n");*/
+  DEBUG_OUT_INPUT(("rdpCursorOffScreen\n"));
   return 0;
 }
 
@@ -409,14 +411,14 @@ rdpCursorOffScreen(ScreenPtr* ppScreen, int* x, int* y)
 void
 rdpCrossScreen(ScreenPtr pScreen, Bool entering)
 {
-  /*ErrorF("hi rdpCrossScreen\n");*/
+  DEBUG_OUT_INPUT(("rdpCrossScreen\n"));
 }
 
 /******************************************************************************/
 Bool
 rdpSpriteRealizeCursor(ScreenPtr pScreen, CursorPtr pCursor)
 {
-  /*ErrorF("hi rdpSpriteRealizeCursor\n");*/
+  DEBUG_OUT_INPUT(("rdpSpriteRealizeCursor\n"));
   return 1;
 }
 
@@ -424,7 +426,7 @@ rdpSpriteRealizeCursor(ScreenPtr pScreen, CursorPtr pCursor)
 Bool
 rdpSpriteUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCursor)
 {
-  /*ErrorF("hi rdpSpriteUnrealizeCursor\n");*/
+  DEBUG_OUT_INPUT(("hi rdpSpriteUnrealizeCursor\n"));
   return 1;
 }
 
@@ -578,7 +580,7 @@ rdpSpriteSetCursor(ScreenPtr pScreen, CursorPtr pCursor, int x, int y)
 void
 rdpSpriteMoveCursor(ScreenPtr pScreen, int x, int y)
 {
-  /*ErrorF("hi rdpSpriteMoveCursor\n");*/
+  DEBUG_OUT_INPUT(("hi rdpSpriteMoveCursor\n"));
 }
 
 /******************************************************************************/
@@ -622,12 +624,6 @@ check_keysa(void)
   xEvent ev;
   unsigned long time;
 
-/*
-  ErrorF("tab special happened\n");
-  ErrorF("%d\n", g_ctrl_down);
-  ErrorF("%d\n", g_alt_down);
-  ErrorF("%d\n", g_shift_down);
-*/
   time = GetTimeInMillis();
   if (g_ctrl_down != 0)
   {
@@ -669,9 +665,6 @@ KbdAddEvent(int down, int param1, int param2, int param3, int param4)
   int is_ext;
   int is_spe;
 
-/*
-  ErrorF("down %d param1 %d param2 %d param3 %d param4 %d\n", down, param1, param2, param3, param4);
-*/
   memset(&ev, 0, sizeof(ev));
   ev.u.u.type = down ? KeyPress : KeyRelease;
   time = GetTimeInMillis();
