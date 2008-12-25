@@ -839,3 +839,31 @@ then
 fi
 
 echo "all ok"
+
+# this will copy the build X server with the other X server binaries
+cp $SRCDIR/xorg-server-X11R7.1-1.1.0/hw/rdp/X11rdp $X11RDPBASE/bin
+strip $X11RDPBASE/bin/X11rdp
+
+# make a symboloc link to your local xkbcomp
+if ! test -f $X11RDPBASE/bin/xkbcomp
+then
+  if test -f /usr/bin/xkbcomp
+  then
+    ln -s /usr/bin/xkbcomp $X11RDPBASE/bin/xkbcomp
+  elif test -f /usr/X11R6/bin/xkbcomp
+  then
+    ln -s /usr/X11R6/bin/xkbcomp $X11RDPBASE/bin/xkbcomp
+  fi
+fi
+
+# make a symbolic link to your local font directory
+if ! test -d $X11RDPBASE/lib/X11/fonts
+then
+  if test -d /usr/share/fonts/X11
+  then
+    ln -s /usr/share/fonts/X11 $X11RDPBASE/lib/X11/fonts
+  elif test -d /usr/X11R6/lib/X11/fonts
+  then
+    ln -s /usr/X11R6/lib/X11/fonts $X11RDPBASE/lib/X11/fonts
+  fi
+fi
