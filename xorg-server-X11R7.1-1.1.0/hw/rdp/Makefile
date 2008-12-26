@@ -63,7 +63,7 @@ CFLAGS = -O2 -fno-strength-reduce -ansi -pedantic \
 # these are not needed I think
 # -Dlinux -D__i386__
 
-LDFLAGS = -L$(LIBBASE)
+LDFLAGS = -L$(LIBBASE) -Wl,-rpath,$(LIBBASE)
 
 all: X11rdp
 
