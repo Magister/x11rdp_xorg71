@@ -22,7 +22,7 @@ LIBS = ../../dbe/.libs/libdbe.a \
 	../../GL/glx/.libs/libglx.a \
 	../../GL/mesa/.libs/libGLcore.a \
 	librdp.a \
-	-lfreetype -lz -lm -lXfont -lXau -lXdmcp
+	-lfreetype -lz -lm -lXfont -lXau -lXdmcp -lXfixes
 
 CFLAGS = -O2 -fno-strength-reduce -ansi -pedantic \
 	-I../../include \
@@ -45,6 +45,7 @@ CFLAGS = -O2 -fno-strength-reduce -ansi -pedantic \
 	-DAVOID_GLYPHBLT -DFUNCPROTO=15 -DNARROWPROTO -DDDXOSFATALERROR \
 	-DPART_NET -DDDXTIME -D_HAVE_XALLOC_DECLS \
 	\
+	-DXFIXES \
 	-DSMART_SCHEDULE -DSERVER_LOCK -DGLXEXT -DSHAPE -DRENDER -DRANDR \
 	-DBIGREQS -D_POSIX_SOURCE -D_BSD_SOURCE -DSCREENSAVER -DXF86BIGFONT \
 	-DXCMISC -DXTEST -DXTRAP -DXV -DXSYNC -DMITMISC -DPANORAMIX \
