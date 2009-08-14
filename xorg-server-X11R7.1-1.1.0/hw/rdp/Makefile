@@ -21,8 +21,9 @@ LIBS = ../../dbe/.libs/libdbe.a \
 	../../Xi/.libs/libXi.a \
 	../../GL/glx/.libs/libglx.a \
 	../../GL/mesa/.libs/libGLcore.a \
+	../../xfixes/.libs/libxfixes.a \
 	librdp.a \
-	-lfreetype -lz -lm -lXfont -lXau -lXdmcp -lXfixes
+	-lfreetype -lz -lm -lXfont -lXau -lXdmcp
 
 CFLAGS = -O2 -fno-strength-reduce -ansi -pedantic \
 	-I../../include \
