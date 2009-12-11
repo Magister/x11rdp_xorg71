@@ -862,6 +862,9 @@ then
   if test -d /usr/share/fonts/X11
   then
     ln -s /usr/share/fonts/X11 $X11RDPBASE/lib/X11/fonts
+  elif test -d /usr/share/X11/fonts
+  then
+    ln -s /usr/share/X11/fonts $X11RDPBASE/lib/X11/fonts
   elif test -d /usr/X11R6/lib/X11/fonts
   then
     ln -s /usr/X11R6/lib/X11/fonts $X11RDPBASE/lib/X11/fonts
