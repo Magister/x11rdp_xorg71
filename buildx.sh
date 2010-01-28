@@ -1,5 +1,7 @@
 #!/bin/sh
 
+export CPPFLAGS=-D_GNU_SOURCE
+
 print_help()
 {
   echo ""
