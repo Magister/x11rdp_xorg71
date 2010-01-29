@@ -71,6 +71,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define X11RDPVER "0.5.0"
 
+#if !defined(BITMAP_BIT_ORDER)
+#define BITMAP_BIT_ORDER MSBFirst
+#endif
+
+#if !defined(IMAGE_BYTE_ORDER)
+#define IMAGE_BYTE_ORDER LSBFirst
+#endif
+
 /* Per-screen (framebuffer) structure.  There is only one of these, since we
    don't allow the X server to have multiple screens. */
 struct _rdpScreenInfoRec
@@ -266,9 +274,10 @@ rdpup_send_area(int x, int y, int w, int h);
 #  error Unknown endianness in rdp.h
 #endif
 /* check if we need to align data */
+/* check if we need to align data */
 #if defined(__sparc__) || defined(__alpha__) || defined(__hppa__) || \
     defined(__AIX__) || defined(__PPC__) || defined(__mips__) || \
-    defined(__ia64__)
+    defined(__ia64__) || defined(__ppc__) || defined(__arm__)
 #define NEED_ALIGN
 #endif
 
