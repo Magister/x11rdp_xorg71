@@ -19,6 +19,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#if defined(__arm__) && !defined(__arm32__)
+#define __arm32__
+#endif
+
 #include "xorg-server.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -70,14 +74,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif
 
 #define X11RDPVER "0.5.0"
-
-#if !defined(BITMAP_BIT_ORDER)
-#define BITMAP_BIT_ORDER MSBFirst
-#endif
-
-#if !defined(IMAGE_BYTE_ORDER)
-#define IMAGE_BYTE_ORDER LSBFirst
-#endif
 
 /* Per-screen (framebuffer) structure.  There is only one of these, since we
    don't allow the X server to have multiple screens. */
