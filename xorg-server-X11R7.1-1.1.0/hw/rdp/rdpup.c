@@ -1,5 +1,5 @@
 /*
-Copyright 2005-2008 Jay Sorg
+Copyright 2005-2011 Jay Sorg
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -21,8 +21,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "rdp.h"
 
+#if 1
 #define DEBUG_OUT_UP(arg)
-/*#define DEBUG_OUT_UP(arg) ErrorF arg*/
+#else
+#define DEBUG_OUT_UP(arg) ErrorF arg
+#endif
 
 static int g_listen_sck = 0;
 static int g_sck = 0;
@@ -265,6 +268,49 @@ rdpup_recv_msg(struct stream* s)
 }
 
 /******************************************************************************/
+/*
+    this from miScreenInit
+    pScreen->mmWidth = (xsize * 254 + dpix * 5) / (dpix * 10);
+    pScreen->mmHeight = (ysize * 254 + dpiy * 5) / (dpiy * 10);
+*/
+static int
+process_screen_size_msg(int width, int height, int bpp)
+{
+  RRScreenSizePtr pSize;
+  int mmwidth;
+  int mmheight;
+
+  ErrorF("process_screen_size_msg: set width %d height %d bpp %d\n",
+         width, height, bpp);
+  g_rdpScreen.rdp_width = width;
+  g_rdpScreen.rdp_height = height;
+  g_rdpScreen.rdp_bpp = bpp;
+  mmwidth = PixelToMM(width);
+  mmheight = PixelToMM(height);
+  pSize = RRRegisterSize(g_pScreen, width, height, mmwidth, mmheight);
+  RRSetCurrentConfig(g_pScreen, RR_Rotate_0, 0, pSize);
+  if ((g_rdpScreen.width != width) || (g_rdpScreen.height != height))
+  {
+    RRSetScreenConfig(g_pScreen, RR_Rotate_0, 0, pSize);
+  }
+}
+
+/******************************************************************************/
+static int
+l_bound_by(int val, int low, int high)
+{
+  if (val > high)
+  {
+    val = high;
+  }
+  if (val < low)
+  {
+    val = low;
+  }
+  return val;
+}
+
+/******************************************************************************/
 static int
 rdpup_process_msg(struct stream* s)
 {
@@ -295,8 +341,10 @@ param4 %d\n", msg, param1, param2, param3, param4));
         KbdSync(param1);
         break;
       case 100:
-        g_cursor_x = param1;
-        g_cursor_y = param2;
+        /* without the minus 2, strange things happen when dragging
+           past the width or height */
+        g_cursor_x = l_bound_by(param1, 0, g_rdpScreen.width - 2);
+        g_cursor_y = l_bound_by(param2, 0, g_rdpScreen.height - 2);
         PtrAddEvent(g_button_mask, g_cursor_x, g_cursor_y);
         break;
       case 101:
@@ -344,6 +392,9 @@ param4 %d\n", msg, param1, param2, param3, param4));
         rdpup_send_area((param1 >> 16) & 0xffff, param1 & 0xffff,
                         (param2 >> 16) & 0xffff, param2 & 0xffff);
         rdpup_end_update();
+        break;
+      case 300:
+        process_screen_size_msg(param1, param2, param3);
         break;
     }
   }
