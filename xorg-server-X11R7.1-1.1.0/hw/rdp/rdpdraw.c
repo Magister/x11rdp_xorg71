@@ -24,10 +24,13 @@ Xserver drawing ops and funcs
 #include "rdp.h"
 #include "gcops.h"
 
+#if 1
 #define DEBUG_OUT_FUNCS(arg)
 #define DEBUG_OUT_OPS(arg)
-/*#define DEBUG_OUT_FUNCS(arg) ErrorF arg*/
-/*#define DEBUG_OUT_OPS(arg) ErrorF arg*/
+#else
+#define DEBUG_OUT_FUNCS(arg) ErrorF arg
+#define DEBUG_OUT_OPS(arg) ErrorF arg
+#endif
 
 extern rdpScreenInfoRec g_rdpScreen; /* from rdpmain.c */
 extern int g_rdpGCIndex; /* from rdpmain.c */
