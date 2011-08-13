@@ -1,5 +1,5 @@
 /*
-Copyright 2005-2008 Jay Sorg
+Copyright 2005-2011 Jay Sorg
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -58,6 +58,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "picturestr.h"
 #include "XKBstr.h"
 #include "inputstr.h"
+#include "randrstr.h"
 
 /* test to see if this is xorg source or xfree86 */
 #ifdef XORGSERVER
@@ -74,6 +75,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif
 
 #define X11RDPVER "0.5.0"
+
+#define PixelDPI 100
+#define PixelToMM(_size) (((_size) * 254 + (PixelDPI) * 5) / ((PixelDPI) * 10))
 
 /* Per-screen (framebuffer) structure.  There is only one of these, since we
    don't allow the X server to have multiple screens. */
@@ -102,6 +106,10 @@ struct _rdpScreenInfoRec
   CompositeProcPtr Composite;
   /* Backing store procedures */
   RestoreAreasProcPtr RestoreAreas;
+
+  int rdp_width;
+  int rdp_height;
+  int rdp_bpp;
 };
 typedef struct _rdpScreenInfoRec rdpScreenInfoRec;
 typedef rdpScreenInfoRec* rdpScreenInfoPtr;
