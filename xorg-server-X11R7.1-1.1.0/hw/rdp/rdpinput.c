@@ -1,5 +1,5 @@
 /*
-Copyright 2005-2008 Jay Sorg
+Copyright 2005-2011 Jay Sorg
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -38,8 +38,11 @@ keyboard and mouse stuff
 
 #include "rdp.h"
 
+#if 1
 #define DEBUG_OUT_INPUT(arg)
-/*#define DEBUG_OUT_INPUT(arg) ErrorF arg*/
+#else
+#define DEBUG_OUT_INPUT(arg) ErrorF arg
+#endif
 
 static DeviceIntPtr g_kbdDevice = 0;
 static int g_old_button_mask = 0;
@@ -547,6 +550,7 @@ rdpSpriteSetCursor(ScreenPtr pScreen, CursorPtr pCursor, int x, int y)
   paddedRowBytes = PixmapBytePad(w, 1);
   xhot = pCursor->bits->xhot;
   yhot = pCursor->bits->yhot;
+  /* ErrorF("xhot %d yhot %d\n", xhot, yhot); */
   data = (char*)(pCursor->bits->source);
   mask = (char*)(pCursor->bits->mask);
   fgcolor = (((pCursor->foreRed >> 8) & 0xff) << 16) |
