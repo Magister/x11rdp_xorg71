@@ -147,6 +147,8 @@ void
 g_sprintf(char* dest, char* format, ...);
 int
 g_tcp_socket(void);
+int
+g_tcp_local_socket_dgram(void);
 void
 g_memcpy(void* d_ptr, const void* s_ptr, int size);
 int
@@ -159,6 +161,8 @@ int
 g_tcp_select(int sck1, int sck2);
 int
 g_tcp_bind(int sck, char* port);
+int
+g_tcp_local_bind(int sck, char* port);
 int
 g_tcp_listen(int sck);
 

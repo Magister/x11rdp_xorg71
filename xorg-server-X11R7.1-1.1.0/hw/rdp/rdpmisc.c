@@ -23,6 +23,8 @@ the rest
 
 #include "rdp.h"
 
+#include <sys/un.h>
+
 Bool noFontCacheExtension = 1;
 
 /******************************************************************************/
@@ -276,6 +278,17 @@ g_tcp_socket(void)
 }
 
 /*****************************************************************************/
+int
+g_tcp_local_socket_dgram(void)
+{
+#if defined(_WIN32)
+  return 0;
+#else
+  return socket(AF_UNIX, SOCK_DGRAM, 0);
+#endif
+}
+
+/*****************************************************************************/
 void
 g_memcpy(void* d_ptr, const void* s_ptr, int size)
 {
@@ -386,6 +399,22 @@ g_tcp_bind(int sck, char* port)
   s.sin_port = htons(atoi(port));
   s.sin_addr.s_addr = INADDR_ANY;
   return bind(sck, (struct sockaddr*)&s, sizeof(struct sockaddr_in));
+}
+
+/*****************************************************************************/
+int
+g_tcp_local_bind(int sck, char* port)
+{
+#if defined(_WIN32)
+  return -1;
+#else
+  struct sockaddr_un s;
+
+  memset(&s, 0, sizeof(struct sockaddr_un));
+  s.sun_family = AF_UNIX;
+  strcpy(s.sun_path, port);
+  return bind(sck, (struct sockaddr*)&s, sizeof(struct sockaddr_un));
+#endif
 }
 
 /*****************************************************************************/

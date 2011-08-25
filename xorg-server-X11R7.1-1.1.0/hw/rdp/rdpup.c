@@ -31,6 +31,12 @@ static int g_listen_sck = 0;
 static int g_sck = 0;
 static int g_sck_closed = 0;
 static int g_connected = 0;
+
+static int g_dis_listen_sck = 0;
+static int g_dis_sck = 0;
+static int g_dis_sck_closed = 0;
+static int g_dis_connected = 0;
+
 static int g_begin = 0;
 static struct stream* g_out_s = 0;
 static struct stream* g_in_s = 0;
@@ -438,6 +444,13 @@ rdpup_init(void)
     g_tcp_listen(g_listen_sck);
     AddEnabledDevice(g_listen_sck);
   }
+  g_dis_listen_sck = g_tcp_local_socket_dgram();
+  if (g_dis_listen_sck != 0)
+  {
+    g_sprintf(text, "/tmp/xrdp_disconnect_display_%s", display);
+    g_tcp_local_bind(g_dis_listen_sck, text);
+    AddEnabledDevice(g_dis_listen_sck);
+  }
   return 1;
 }
 
@@ -446,6 +459,7 @@ int
 rdpup_check(void)
 {
   int sel;
+  char buf[8];
 
   sel = g_tcp_select(g_listen_sck, g_sck);
   if (sel & 1)
@@ -478,6 +492,25 @@ rdpup_check(void)
     if (rdpup_recv_msg(g_in_s) == 0)
     {
       rdpup_process_msg(g_in_s);
+    }
+  }
+  if (g_dis_listen_sck != 0)
+  {
+    sel = g_tcp_select(g_dis_listen_sck, 0);
+    if (sel & 1)
+    {
+      if (g_tcp_recv(g_dis_listen_sck, buf, 4, 0) > 0)
+      {
+        if (g_sck != 0)
+        {
+          rdpLog("disconnecting session via user request\n");
+          RemoveEnabledDevice(g_sck);
+          g_connected = 0;
+          g_tcp_close(g_sck);
+          g_sck = 0;
+          g_sck_closed = 1;
+        }
+      }
     }
   }
   return 0;

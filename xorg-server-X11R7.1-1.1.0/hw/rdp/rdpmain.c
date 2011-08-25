@@ -487,12 +487,14 @@ InitInput(int argc, char** argv)
 void
 ddxGiveUp(void)
 {
-  char unixSocketName[32];
+  char unixSocketName[64];
 
   g_free(g_rdpScreen.pfbMemory);
   if (g_initOutputCalled)
   {
     sprintf(unixSocketName, "/tmp/.X11-unix/X%s", display);
+    unlink(unixSocketName);
+    sprintf(unixSocketName, "/tmp/xrdp_disconnect_display_%s", display);
     unlink(unixSocketName);
   }
 }
@@ -569,7 +571,7 @@ rdpRandRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
   RRScreenSizePtr pSize;
   rrScrPrivPtr pRRScrPriv;
 
-  DEBUG_OUT(("rdpRandRGetInfo:\n"));
+  ErrorF("rdpRandRGetInfo:\n");
 
   pRRScrPriv = rrGetScrPriv(pScreen);
 
@@ -714,8 +716,8 @@ rdpRandRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate,
   BoxRec box;
   RegionRec temp;
 
-  DEBUG_OUT(("rdpRandRSetConfig: width %d height %d\n",
-             pSize->width, pSize->height));
+  ErrorF("rdpRandRSetConfig: width %d height %d\n",
+         pSize->width, pSize->height);
   g_rdpScreen.width = pSize->width;
   g_rdpScreen.height = pSize->height;
   g_rdpScreen.paddedWidthInBytes =
