@@ -110,6 +110,8 @@ struct _rdpScreenInfoRec
   int rdp_width;
   int rdp_height;
   int rdp_bpp;
+  int rdp_Bpp;
+  int rdp_Bpp_mask;
 };
 typedef struct _rdpScreenInfoRec rdpScreenInfoRec;
 typedef rdpScreenInfoRec* rdpScreenInfoPtr;

@@ -34,7 +34,6 @@ rdpScreenInfoRec g_rdpScreen; /* the one screen */
 ScreenPtr g_pScreen = 0;
 int g_rdpGCIndex = -1;
 /* set all these at once, use function set_bpp */
-/* only allow 8 and 16 bpp for not, adding 32 later */
 int g_bpp = 16;
 int g_Bpp = 2;
 int g_Bpp_mask = 0xffff;

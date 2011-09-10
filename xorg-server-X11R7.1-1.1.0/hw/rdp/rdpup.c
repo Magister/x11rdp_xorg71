@@ -291,6 +291,26 @@ process_screen_size_msg(int width, int height, int bpp)
   g_rdpScreen.rdp_width = width;
   g_rdpScreen.rdp_height = height;
   g_rdpScreen.rdp_bpp = bpp;
+  if (bpp < 15)
+  {
+    g_rdpScreen.rdp_Bpp = 1;
+    g_rdpScreen.rdp_Bpp_mask = 0xff;
+  }
+  else if (bpp == 15)
+  {
+    g_rdpScreen.rdp_Bpp = 2;
+    g_rdpScreen.rdp_Bpp_mask = 0x7fff;
+  }
+  else if (bpp == 16)
+  {
+    g_rdpScreen.rdp_Bpp = 2;
+    g_rdpScreen.rdp_Bpp_mask = 0xffff;
+  }
+  else if (bpp > 16)
+  {
+    g_rdpScreen.rdp_Bpp = 4;
+    g_rdpScreen.rdp_Bpp_mask = 0xffffff;
+  }
   mmwidth = PixelToMM(width);
   mmheight = PixelToMM(height);
   pSize = RRRegisterSize(g_pScreen, width, height, mmwidth, mmheight);
@@ -636,6 +656,99 @@ rdpup_reset_clip(void)
   return 0;
 }
 
+#define COLOR8(r, g, b) \
+( \
+  (((r) >> 5) << 0) | \
+  (((g) >> 5) << 3) | \
+  (((b) >> 6) << 6) \
+)
+#define COLOR15(r, g, b) ((((r) >> 3) << 10) | (((g) >> 3) << 5) | ((b) >> 3))
+#define COLOR16(r, g, b) ((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3))
+#define SPLITCOLOR32(r, g, b, c) \
+{ \
+  r = ((c) >> 16) & 0xff; \
+  g = ((c) >> 8) & 0xff; \
+  b = (c) & 0xff; \
+}
+
+int
+convert_pixels(void* src, void* dst, int num_pixels)
+{
+  unsigned int pixel;
+  unsigned int red;
+  unsigned int green;
+  unsigned int blue;
+  unsigned int* src32;
+  unsigned int* dst32;
+  unsigned short* dst16;
+  unsigned char* dst8;
+  int index;
+
+  /* ErrorF("g_rdpScreen.depth %d g_rdpScreen.rdp_bpp %d\n", g_rdpScreen.depth, g_rdpScreen.rdp_bpp); */
+
+  if (g_rdpScreen.depth == g_rdpScreen.rdp_bpp)
+  {
+    memcpy(dst, src, num_pixels * g_Bpp);
+    return 0;
+  }
+
+  if (g_rdpScreen.depth == 24)
+  {
+    src32 = (unsigned int*)src;
+    if (g_rdpScreen.rdp_bpp == 24)
+    {
+      dst32 = (unsigned int*)dst;
+      for (index = 0; index < num_pixels; index++)
+      {
+        pixel = *src32;
+        *dst32 = pixel;
+        dst32++;
+        src32++;
+      }
+    }
+    else if (g_rdpScreen.rdp_bpp == 16)
+    {
+      dst16 = (unsigned short*)dst;
+      for (index = 0; index < num_pixels; index++)
+      {
+        pixel = *src32;
+        SPLITCOLOR32(red, green, blue, pixel);
+        pixel = COLOR16(red, green, blue);
+        *dst16 = pixel;
+        dst16++;
+        src32++;
+      }
+    }
+    else if (g_rdpScreen.rdp_bpp == 15)
+    {
+      dst16 = (unsigned short*)dst;
+      for (index = 0; index < num_pixels; index++)
+      {
+        pixel = *src32;
+        SPLITCOLOR32(red, green, blue, pixel);
+        pixel = COLOR15(red, green, blue);
+        *dst16 = pixel;
+        dst16++;
+        src32++;
+      }
+    }
+    else if (g_rdpScreen.rdp_bpp == 8)
+    {
+      dst8 = (unsigned char*)dst;
+      for (index = 0; index < num_pixels; index++)
+      {
+        pixel = *src32;
+        SPLITCOLOR32(red, green, blue, pixel);
+        pixel = COLOR8(red, green, blue);
+        *dst8 = pixel;
+        dst8++;
+        src32++;
+      }
+    }
+  }
+  return 0;
+}
+
 /******************************************************************************/
 int
 rdpup_set_fgcolor(int fgcolor)
@@ -647,6 +760,11 @@ rdpup_set_fgcolor(int fgcolor)
     out_uint16_le(g_out_s, 12);
     g_count++;
     fgcolor = fgcolor & g_Bpp_mask;
+    if (g_rdpScreen.depth != g_rdpScreen.rdp_bpp)
+    {
+      convert_pixels(&fgcolor, &fgcolor, 1);
+      fgcolor = fgcolor & g_rdpScreen.rdp_Bpp_mask;
+    }
     out_uint32_le(g_out_s, fgcolor);
   }
   return 0;
@@ -663,6 +781,11 @@ rdpup_set_bgcolor(int bgcolor)
     out_uint16_le(g_out_s, 13);
     g_count++;
     bgcolor = bgcolor & g_Bpp_mask;
+    if (g_rdpScreen.depth != g_rdpScreen.rdp_bpp)
+    {
+      convert_pixels(&bgcolor, &bgcolor, 1);
+      bgcolor = bgcolor & g_rdpScreen.rdp_Bpp_mask;
+    }
     out_uint32_le(g_out_s, bgcolor);
   }
   return 0;
@@ -883,19 +1006,20 @@ rdpup_send_area(int x, int y, int w, int h)
         }
         else
         {
-          rdpup_pre_check(lw * lh * g_Bpp + 42);
+          rdpup_pre_check(lw * lh * g_rdpScreen.rdp_Bpp + 42);
           out_uint16_le(g_out_s, 5);
           g_count++;
           out_uint16_le(g_out_s, lx);
           out_uint16_le(g_out_s, ly);
           out_uint16_le(g_out_s, lw);
           out_uint16_le(g_out_s, lh);
-          out_uint32_le(g_out_s, lw * lh * g_Bpp);
+          out_uint32_le(g_out_s, lw * lh * g_rdpScreen.rdp_Bpp);
           for (i = 0; i < lh; i++)
           {
             s = (g_rdpScreen.pfbMemory +
                   ((ly + i) * g_rdpScreen.paddedWidthInBytes) + (lx * g_Bpp));
-            out_uint8a(g_out_s, s, lw * g_Bpp);
+            convert_pixels(s, g_out_s->p, lw);
+            g_out_s->p += lw * g_rdpScreen.rdp_Bpp;
           }
           out_uint16_le(g_out_s, lw);
           out_uint16_le(g_out_s, lh);
