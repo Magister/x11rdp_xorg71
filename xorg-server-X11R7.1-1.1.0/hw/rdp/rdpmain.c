@@ -100,6 +100,14 @@ set_bpp(int bpp)
     g_greenBits = 3;
     g_blueBits = 2;
   }
+  else if (g_bpp == 15)
+  {
+    g_Bpp = 2;
+    g_Bpp_mask = 0x7fff;
+    g_redBits = 5;
+    g_greenBits = 5;
+    g_blueBits = 5;
+  }
   else if (g_bpp == 16)
   {
     g_Bpp = 2;
@@ -107,6 +115,14 @@ set_bpp(int bpp)
     g_redBits = 5;
     g_greenBits = 6;
     g_blueBits = 5;
+  }
+  else if (g_bpp == 24)
+  {
+    g_Bpp = 4;
+    g_Bpp_mask = 0xffffff;
+    g_redBits = 8;
+    g_greenBits = 8;
+    g_blueBits = 8;
   }
   else if (g_bpp == 32)
   {
@@ -759,10 +775,10 @@ rdpRandRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate,
     box.y1 = 0;
     box.x2 = pSize->width;
     box.y2 = pSize->height;
-    REGION_INIT(pScreen, &rootWindow->winSize, &box, 1);
-    REGION_INIT(pScreen, &rootWindow->borderSize, &box, 1);
-    REGION_RESET(pScreen, &rootWindow->borderClip, &box);
-    REGION_BREAK(pScreen, &rootWindow->clipList);
+    miRegionInit(&rootWindow->winSize, &box, 1);
+    miRegionInit(&rootWindow->borderSize, &box, 1);
+    miRegionReset(&rootWindow->borderClip, &box);
+    miRegionBreak(&rootWindow->clipList);
     rootWindow->drawable.width = pSize->width;
     rootWindow->drawable.height = pSize->height;
     ResizeChildrenWinSize(rootWindow, 0, 0, 0, 0);

@@ -749,6 +749,7 @@ get_single_color(int x, int y, int w, int h)
   int p;
   unsigned char* i8;
   unsigned short* i16;
+  unsigned int* i32;
 
   rv = -1;
   if (g_Bpp == 1)
@@ -784,6 +785,26 @@ get_single_color(int x, int y, int w, int h)
       for (j = 0; j < w; j++)
       {
         if (i16[j] != p)
+        {
+          return -1;
+        }
+      }
+    }
+    rv = p;
+  }
+  else if (g_Bpp == 4)
+  {
+    for (i = 0; i < h; i++)
+    {
+      i32 = (unsigned int*)(g_rdpScreen.pfbMemory +
+               ((y + i) * g_rdpScreen.paddedWidthInBytes) + (x * g_Bpp));
+      if (i == 0)
+      {
+        p = *i32;
+      }
+      for (j = 0; j < w; j++)
+      {
+        if (i32[j] != p)
         {
           return -1;
         }
