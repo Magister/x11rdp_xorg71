@@ -711,8 +711,11 @@ rdpInvalidateArea(ScreenPtr pScreen, int x, int y, int cx, int cy)
     if (result == 0)
     {
       MapWindow(pWin, serverClient);
+      DeleteWindow(pWin, None);
+#if 0
       g_updateTimer = TimerSet(g_updateTimer, 0, 50,
                                rdpDeferredDrawCallback, pWin);
+#endif
     }
   }
   return 0;
