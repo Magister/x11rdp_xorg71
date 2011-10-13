@@ -118,6 +118,7 @@ rdpup_send(char* data, int len)
         g_tcp_close(g_sck);
         g_sck = 0;
         g_sck_closed = 1;
+        g_begin = 0;
         return 1;
       }
     }
