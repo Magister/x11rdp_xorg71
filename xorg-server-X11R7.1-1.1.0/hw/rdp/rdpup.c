@@ -533,13 +533,6 @@ rdpup_check(void)
       }
     }
   }
-  if (g_dis_listen_sck != 0)
-  {
-    sel = g_tcp_select(g_dis_listen_sck, 0, 0);
-    if (sel & 1)
-    {
-    }
-  }
   return 0;
 }
 
