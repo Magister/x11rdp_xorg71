@@ -118,7 +118,6 @@ rdpup_send(char* data, int len)
         g_tcp_close(g_sck);
         g_sck = 0;
         g_sck_closed = 1;
-        g_begin = 0;
         return 1;
       }
     }
@@ -480,32 +479,36 @@ int
 rdpup_check(void)
 {
   int sel;
+  int new_sck;
   char buf[8];
 
-  sel = g_tcp_select(g_listen_sck, g_sck);
+  sel = g_tcp_select(g_listen_sck, g_sck, g_dis_listen_sck);
   if (sel & 1)
   {
-    if (g_sck == 0)
+    new_sck = g_tcp_accept(g_listen_sck);
+    if (new_sck == -1)
     {
-      g_sck = g_tcp_accept(g_listen_sck);
-      if (g_sck == -1)
-      {
-        g_sck = 0;
-      }
-      else
-      {
-        g_tcp_set_non_blocking(g_sck);
-        g_tcp_set_no_delay(g_sck);
-        g_connected = 1;
-        g_sck_closed = 0;
-        AddEnabledDevice(g_sck);
-      }
     }
     else
     {
-      rdpLog("rejecting connection, already got a connection\n");
-      g_sleep(10);
-      g_tcp_close(g_tcp_accept(g_listen_sck));
+      if (g_sck != 0)
+      {
+        /* should maybe ask is user wants to allow here with timeout */
+        rdpLog("replacing connection, already got a connection\n");
+        RemoveEnabledDevice(g_sck);
+        g_connected = 0;
+        g_tcp_close(g_sck);
+        g_sck = 0;
+        g_sck_closed = 1;
+      }
+      rdpLog("got a connection\n");
+      g_sck = new_sck;
+      g_tcp_set_non_blocking(g_sck);
+      g_tcp_set_no_delay(g_sck);
+      g_connected = 1;
+      g_sck_closed = 0;
+      g_begin = 0;
+      AddEnabledDevice(g_sck);
     }
   }
   if (sel & 2)
@@ -515,23 +518,26 @@ rdpup_check(void)
       rdpup_process_msg(g_in_s);
     }
   }
+  if (sel & 4)
+  {
+    if (g_tcp_recv(g_dis_listen_sck, buf, 4, 0) > 0)
+    {
+      if (g_sck != 0)
+      {
+        rdpLog("disconnecting session via user request\n");
+        RemoveEnabledDevice(g_sck);
+        g_connected = 0;
+        g_tcp_close(g_sck);
+        g_sck = 0;
+        g_sck_closed = 1;
+      }
+    }
+  }
   if (g_dis_listen_sck != 0)
   {
-    sel = g_tcp_select(g_dis_listen_sck, 0);
+    sel = g_tcp_select(g_dis_listen_sck, 0, 0);
     if (sel & 1)
     {
-      if (g_tcp_recv(g_dis_listen_sck, buf, 4, 0) > 0)
-      {
-        if (g_sck != 0)
-        {
-          rdpLog("disconnecting session via user request\n");
-          RemoveEnabledDevice(g_sck);
-          g_connected = 0;
-          g_tcp_close(g_sck);
-          g_sck = 0;
-          g_sck_closed = 1;
-        }
-      }
     }
   }
   return 0;

@@ -160,7 +160,7 @@ g_tcp_set_non_blocking(int sck);
 int
 g_tcp_accept(int sck);
 int
-g_tcp_select(int sck1, int sck2);
+g_tcp_select(int sck1, int sck2, int sck3);
 int
 g_tcp_bind(int sck, char* port);
 int

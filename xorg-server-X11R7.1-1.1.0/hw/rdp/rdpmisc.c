@@ -345,7 +345,7 @@ g_tcp_accept(int sck)
 
 /*****************************************************************************/
 int
-g_tcp_select(int sck1, int sck2)
+g_tcp_select(int sck1, int sck2, int sck3)
 {
   fd_set rfds;
   struct timeval time;
@@ -363,10 +363,18 @@ g_tcp_select(int sck1, int sck2)
   {
     FD_SET(((unsigned int)sck2), &rfds);
   }
+  if (sck3 > 0)
+  {
+    FD_SET(((unsigned int)sck3), &rfds);
+  }
   max = sck1;
   if (sck2 > max)
   {
     max = sck2;
+  }
+  if (sck3 > max)
+  {
+    max = sck3;
   }
   rv = select(max + 1, &rfds, 0, 0, &time);
   if (rv > 0)
@@ -379,6 +387,10 @@ g_tcp_select(int sck1, int sck2)
     if (FD_ISSET(((unsigned int)sck2), &rfds))
     {
       rv = rv | 2;
+    }
+    if (FD_ISSET(((unsigned int)sck3), &rfds))
+    {
+      rv = rv | 4;
     }
   }
   else
