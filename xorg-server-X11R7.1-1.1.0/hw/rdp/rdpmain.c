@@ -1,5 +1,5 @@
 /*
-Copyright 2005-2011 Jay Sorg
+Copyright 2005-2012 Jay Sorg
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -374,8 +374,8 @@ ddxProcessArgument(int argc, char** argv, int i)
     memset(&g_rdpScreen, 0, sizeof(g_rdpScreen));
     g_rdpScreen.width  = 800;
     g_rdpScreen.height = 600;
-    g_rdpScreen.depth = 8;
-    set_bpp(8);
+    g_rdpScreen.depth = 24;
+    set_bpp(24);
     g_rdpScreen.blackPixel = 1;
     g_firstTime = 0;
     RRExtensionInit();
@@ -649,8 +649,8 @@ rdpRandRGetInfo(ScreenPtr pScreen, Rotation* pRotations)
   RRRegisterSize(pScreen, width, height, mmwidth, mmheight);
 #endif
 
-  width = g_rdpScreen.width;
-  height = g_rdpScreen.height;
+  width = g_rdpScreen.rdp_width;
+  height = g_rdpScreen.rdp_height;
   mmwidth = PixelToMM(width);
   mmheight = PixelToMM(height);
   pSize = RRRegisterSize(pScreen, width, height, mmwidth, mmheight);
@@ -734,6 +734,12 @@ rdpRandRSetConfig(ScreenPtr pScreen, Rotation rotateKind, int rate,
   BoxRec box;
   RegionRec temp;
 
+  if ((pSize->width < 1) || (pSize->height < 1))
+  {
+    ErrorF("rdpRandRSetConfig: error width %d height %d\n",
+           pSize->width, pSize->height);
+    return FALSE;
+  }
   ErrorF("rdpRandRSetConfig: width %d height %d\n",
          pSize->width, pSize->height);
   g_rdpScreen.width = pSize->width;

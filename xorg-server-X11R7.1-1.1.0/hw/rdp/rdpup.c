@@ -285,6 +285,7 @@ process_screen_size_msg(int width, int height, int bpp)
   RRScreenSizePtr pSize;
   int mmwidth;
   int mmheight;
+  int error;
 
   ErrorF("process_screen_size_msg: set width %d height %d bpp %d\n",
          width, height, bpp);
@@ -317,7 +318,12 @@ process_screen_size_msg(int width, int height, int bpp)
   RRSetCurrentConfig(g_pScreen, RR_Rotate_0, 0, pSize);
   if ((g_rdpScreen.width != width) || (g_rdpScreen.height != height))
   {
-    RRSetScreenConfig(g_pScreen, RR_Rotate_0, 0, pSize);
+    error = RRSetScreenConfig(g_pScreen, RR_Rotate_0, 0, pSize);
+    if (error == BadImplementation)
+    {
+      ErrorF("process_screen_size_msg: RRSetScreenConfig returned "
+             "BadImplementation\n");
+    }
   }
 }
 
