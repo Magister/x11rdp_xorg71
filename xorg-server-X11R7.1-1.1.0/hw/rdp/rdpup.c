@@ -473,9 +473,15 @@ rdpup_init(void)
   g_dis_listen_sck = g_tcp_local_socket_dgram();
   if (g_dis_listen_sck != 0)
   {
-    g_sprintf(text, "/tmp/xrdp_disconnect_display_%s", display);
-    g_tcp_local_bind(g_dis_listen_sck, text);
-    AddEnabledDevice(g_dis_listen_sck);
+    g_sprintf(text, "/tmp/.xrdp/xrdp_disconnect_display_%s", display);
+    if (g_tcp_local_bind(g_dis_listen_sck, text) == 0)
+    {
+      AddEnabledDevice(g_dis_listen_sck);
+    }
+    else
+    {
+      rdpLog("g_tcp_local_bind failed [%s]\n", text);
+    }
   }
   return 1;
 }

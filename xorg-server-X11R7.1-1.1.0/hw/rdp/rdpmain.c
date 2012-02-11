@@ -509,7 +509,7 @@ ddxGiveUp(void)
   {
     sprintf(unixSocketName, "/tmp/.X11-unix/X%s", display);
     unlink(unixSocketName);
-    sprintf(unixSocketName, "/tmp/xrdp_disconnect_display_%s", display);
+    sprintf(unixSocketName, "/tmp/.xrdp/xrdp_disconnect_display_%s", display);
     unlink(unixSocketName);
   }
 }
